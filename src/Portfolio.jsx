@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 
 const DATA = {
   name: "Tallal Sajid",
@@ -171,29 +171,29 @@ export default function Portfolio() {
   const [showAll, setShowAll] = useState(false);
   const containerRef = useRef(null);
 
-  const sectionRefs = {
-    Home: useRef(null),
-    About: useRef(null),
-    Projects: useRef(null),
-    Experience: useRef(null),
-    Contact: useRef(null),
-  };
+ const sectionRefs = useMemo(() => ({
+  Home: useRef(null),
+  About: useRef(null),
+  Projects: useRef(null),
+  Experience: useRef(null),
+  Contact: useRef(null),
+}), []);
 
-  useEffect(() => {
-  const container = containerRef.current;
-  if (!container) return;
-  const onScroll = () => {
-    setScrolled(container.scrollTop > 20);
-    const offsets = NAV_ITEMS.map((n) => ({
-      name: n,
-      top: sectionRefs[n].current?.getBoundingClientRect().top ?? 9999,
-    }));
-    const active = offsets.filter((o) => o.top <= 80).at(-1);
-    if (active) setActiveNav(active.name);
-  };
-  container.addEventListener("scroll", onScroll, { passive: true });
-  return () => container.removeEventListener("scroll", onScroll);
-}, [sectionRefs]);
+   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const onScroll = () => {
+      setScrolled(container.scrollTop > 20);
+      const offsets = NAV_ITEMS.map((n) => ({
+        name: n,
+        top: sectionRefs[n].current?.getBoundingClientRect().top ?? 9999,
+      }));
+      const active = offsets.filter((o) => o.top <= 80).at(-1);
+      if (active) setActiveNav(active.name);
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, [sectionRefs]);
 
   const scrollTo = (section) => {
     sectionRefs[section].current?.scrollIntoView({ behavior: "smooth" });
