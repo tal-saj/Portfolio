@@ -329,7 +329,7 @@ useEffect(() => {
             <div className="grid md:grid-cols-2 gap-16">
               <div>
                 <p className="leading-relaxed text-lg mb-6" style={{ color:"rgba(255,255,255,0.6)" }}>{DATA.about}</p>
-                <a href="/Tallal-CV.pdf" className="text-sm pb-1 transition-colors" style={{ fontFamily:"'Space Mono',monospace", color:"#00ffc8", borderBottom:"1px solid rgba(0,255,200,0.4)" }}>Download Résumé ↗</a>
+                <a href="https://drive.google.com/file/d/1Fatc3DeoXv_7yGKWCgLvJIgjVm2hHSTm/view?usp=sharing" className="text-sm pb-1 transition-colors" style={{ fontFamily:"'Space Mono',monospace", color:"#00ffc8", borderBottom:"1px solid rgba(0,255,200,0.4)" }}>Download Résumé ↗</a>
               </div>
               <div className="space-y-8">
                 {DATA.skills.map((group) => (
