@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo} from "react";
 
 const DATA = {
   name: "Tallal Sajid",
@@ -171,29 +171,40 @@ export default function Portfolio() {
   const [showAll, setShowAll] = useState(false);
   const containerRef = useRef(null);
 
- const sectionRefs = useMemo(() => ({
-  Home: useRef(null),
-  About: useRef(null),
-  Projects: useRef(null),
-  Experience: useRef(null),
-  Contact: useRef(null),
-}), []);
 
-   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const onScroll = () => {
-      setScrolled(container.scrollTop > 20);
-      const offsets = NAV_ITEMS.map((n) => ({
-        name: n,
-        top: sectionRefs[n].current?.getBoundingClientRect().top ?? 9999,
-      }));
-      const active = offsets.filter((o) => o.top <= 80).at(-1);
-      if (active) setActiveNav(active.name);
-    };
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => container.removeEventListener("scroll", onScroll);
-  }, [sectionRefs]);
+const homeRef = useRef(null);
+const aboutRef = useRef(null);
+const projectsRef = useRef(null);
+const experienceRef = useRef(null);
+const contactRef = useRef(null);
+
+const sectionRefs = useMemo(() => ({
+  Home: homeRef,
+  About: aboutRef,
+  Projects: projectsRef,
+  Experience: experienceRef,
+  Contact: contactRef,
+}), [homeRef, aboutRef, projectsRef, experienceRef, contactRef]);
+
+useEffect(() => {
+  const container = containerRef.current;
+  if (!container) return;
+
+  const onScroll = () => {
+    setScrolled(container.scrollTop > 20);
+
+    const offsets = NAV_ITEMS.map((n) => ({
+      name: n,
+      top: sectionRefs[n].current?.getBoundingClientRect().top ?? 9999,
+    }));
+
+    const active = offsets.filter((o) => o.top <= 80).at(-1);
+    if (active) setActiveNav(active.name);
+  };
+
+  container.addEventListener("scroll", onScroll, { passive: true });
+  return () => container.removeEventListener("scroll", onScroll);
+}, [sectionRefs]); // ✅ clean
 
   const scrollTo = (section) => {
     sectionRefs[section].current?.scrollIntoView({ behavior: "smooth" });
@@ -318,7 +329,7 @@ export default function Portfolio() {
             <div className="grid md:grid-cols-2 gap-16">
               <div>
                 <p className="leading-relaxed text-lg mb-6" style={{ color:"rgba(255,255,255,0.6)" }}>{DATA.about}</p>
-                <a href="https://drive.google.com/file/d/1Fatc3DeoXv_7yGKWCgLvJIgjVm2hHSTm/view?usp=sharing" className="text-sm pb-1 transition-colors" style={{ fontFamily:"'Space Mono',monospace", color:"#00ffc8", borderBottom:"1px solid rgba(0,255,200,0.4)" }}>Download Résumé ↗</a>
+                <a href="/Tallal-CV.pdf" className="text-sm pb-1 transition-colors" style={{ fontFamily:"'Space Mono',monospace", color:"#00ffc8", borderBottom:"1px solid rgba(0,255,200,0.4)" }}>Download Résumé ↗</a>
               </div>
               <div className="space-y-8">
                 {DATA.skills.map((group) => (
@@ -372,7 +383,7 @@ export default function Portfolio() {
               Say Hello →
             </a>
             <div className="flex justify-center gap-8 mt-14">
-              {[{label:"GitHub",url:DATA.github},{label:"LinkedIn",url:DATA.linkedin},{label:"Twitter",url:DATA.twitter},{label:"Email",url:`mailto:${DATA.email}`}].map((s)=>(
+              {[{label:"GitHub",url:DATA.github},{label:"LinkedIn",url:DATA.linkedin},{label:"Email",url:`mailto:${DATA.email}`}].map((s)=>(
                 <a key={s.label} href={s.url} className="text-xs transition-colors" style={{ fontFamily:"'Space Mono',monospace", color:"rgba(255,255,255,0.3)" }}
                   onMouseOver={(e)=>e.target.style.color="#00ffc8"} onMouseOut={(e)=>e.target.style.color="rgba(255,255,255,0.3)"}>{s.label}</a>
               ))}
