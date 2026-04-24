@@ -28,7 +28,8 @@ const DATA = {
     { id: 4, title: "Kouba UK", desc: "Portfolio website for a client to showcase their brand, services, and offerings in a clear and engaging way.", tags: ["HTML", "CSS", "JS"], url: "#", repo: "https://github.com/tal-saj/kouba.uk" },
   ],
   experience: [
-    { role: "Freelancer & Vibe Coder", company: "Remote", period: "2024 – Present", desc: "Developed and contributed in 10+ projects across platforms." },
+    { role: "Junior Web Developer", company: "ScriptExp Private Limited", period: "Aug 2025 – Present", desc: "Worked on 5+ web applications, collaborated with a team of 10+ developers, and fixed 18+ bugs while writing clean and efficient code." },
+    { role: "Freelancer & Vibe Coder", company: "Remote", period: "jun 2024 – Aug 2025", desc: "Developed and contributed in 10+ projects across platforms." },
     { role: "Backend Developer & Marketing Analyst", company: "Raqqmayya", period: "Feb 2024 – Jun 2024", desc: "Developed backend logic and researched best marketing techniques for clients." },
   ],
   stats: [
