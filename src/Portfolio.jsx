@@ -680,7 +680,7 @@ function TechOrbs() {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Portfolio() {
   const [activeNav, setActiveNav] = useState("Home");
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const containerRef = useRef(null);
