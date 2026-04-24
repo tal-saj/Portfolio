@@ -708,10 +708,10 @@ export default function Portfolio() {
     return () => container.removeEventListener("scroll", onScroll);
   }, [sectionRefs]);
 
-  const scrollTo = useCallback((section) => {
-    sectionRefs[section].current?.scrollIntoView({ behavior: "smooth" });
-    setMenuOpen(false);
-  }, [sectionRefs]);
+ const scrollTo = useCallback((section) => {
+  sectionRefs[section].current?.scrollIntoView({ behavior: "smooth" });
+  setMenuOpen(false);
+}, [sectionRefs, setMenuOpen]); // Added setMenuOpen here
 
   const visibleProjects = showAll ? DATA.projects : DATA.projects.slice(0, 3);
 
