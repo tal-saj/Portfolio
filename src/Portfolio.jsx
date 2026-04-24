@@ -29,22 +29,129 @@ const DATA = {
   ],
   experience: [
     { role: "Junior Web Developer", company: "ScriptExp Private Limited", period: "Aug 2025 – Present", desc: "Worked on 5+ web applications, collaborated with a team of 10+ developers, and fixed 18+ bugs while writing clean and efficient code." },
-    { role: "Freelancer & Vibe Coder", company: "Remote", period: "jun 2024 – Aug 2025", desc: "Developed and contributed in 10+ projects across platforms." },
+    { role: "Freelancer & Vibe Coder", company: "Remote", period: "Jun 2024 – Aug 2025", desc: "Developed and contributed in 10+ projects across platforms." },
     { role: "Backend Developer & Marketing Analyst", company: "Raqqmayya", period: "Feb 2024 – Jun 2024", desc: "Developed backend logic and researched best marketing techniques for clients." },
   ],
   stats: [
-    { label: "Projects Shipped", value: "10+" },
-    { label: "Years Coding", value: "4+" },
-    { label: "Technologies", value: "20+" },
-    { label: "Happy Clients", value: "8+" },
+    { label: "Projects Shipped", value: "10+", num: 10 },
+    { label: "Years Coding", value: "4+", num: 4 },
+    { label: "Technologies", value: "20+", num: 20 },
+    { label: "Happy Clients", value: "8+", num: 8 },
   ],
 };
 
 const NAV_ITEMS = ["Home", "About", "Projects", "Experience", "Contact"];
 const CYAN = "#00ffc8";
 
-// ── Device detection (run once at module level) ───────────────────────────────
 const IS_TOUCH = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+
+// ── Toast notification ────────────────────────────────────────────────────────
+function Toast({ message, visible }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: IS_TOUCH ? 90 : 32,
+        left: "50%",
+        transform: `translateX(-50%) translateY(${visible ? "0" : "20px"})`,
+        opacity: visible ? 1 : 0,
+        transition: "all 0.35s cubic-bezier(0.22,1,0.36,1)",
+        zIndex: 9999,
+        background: "rgba(5,10,14,0.95)",
+        border: `1px solid rgba(0,255,200,0.4)`,
+        borderRadius: 8,
+        padding: "10px 20px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        backdropFilter: "blur(20px)",
+        boxShadow: `0 0 30px rgba(0,255,200,0.15)`,
+        pointerEvents: "none",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <span style={{ color: CYAN, fontSize: 14 }}>✓</span>
+      <span style={{ fontFamily: "'Space Mono',monospace", fontSize: 12, color: "rgba(255,255,255,0.85)" }}>{message}</span>
+    </div>
+  );
+}
+
+// ── Scroll progress bar ───────────────────────────────────────────────────────
+function ScrollProgressBar({ containerRef }) {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const onScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const pct = scrollTop / (scrollHeight - clientHeight);
+      setProgress(Math.min(1, Math.max(0, pct)));
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, [containerRef]);
+
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999, height: 2, background: "rgba(255,255,255,0.05)", pointerEvents: "none" }}>
+      <div
+        style={{
+          height: "100%",
+          width: `${progress * 100}%`,
+          background: `linear-gradient(90deg, ${CYAN}, #a855f7)`,
+          transition: "width 0.08s linear",
+          boxShadow: `0 0 8px rgba(0,255,200,0.6)`,
+        }}
+      />
+    </div>
+  );
+}
+
+// ── Back to top button ────────────────────────────────────────────────────────
+function BackToTop({ containerRef, scrollTo }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const onScroll = () => setVisible(container.scrollTop > 400);
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, [containerRef]);
+
+  return (
+    <button
+      onClick={() => scrollTo("Home")}
+      style={{
+        position: "fixed",
+        bottom: IS_TOUCH ? 90 : 32,
+        right: 24,
+        zIndex: 500,
+        width: 44,
+        height: 44,
+        borderRadius: "50%",
+        border: `1px solid rgba(0,255,200,0.35)`,
+        background: "rgba(5,10,14,0.9)",
+        color: CYAN,
+        fontSize: 18,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backdropFilter: "blur(20px)",
+        cursor: IS_TOUCH ? "auto" : "none",
+        transition: "all 0.35s cubic-bezier(0.22,1,0.36,1)",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.85)",
+        pointerEvents: visible ? "auto" : "none",
+        boxShadow: visible ? `0 0 20px rgba(0,255,200,0.15)` : "none",
+      }}
+      onMouseOver={(e) => { e.currentTarget.style.background = CYAN; e.currentTarget.style.color = "#000"; }}
+      onMouseOut={(e) => { e.currentTarget.style.background = "rgba(5,10,14,0.9)"; e.currentTarget.style.color = CYAN; }}
+    >
+      ↑
+    </button>
+  );
+}
 
 // ── Mouse/Touch spotlight + particle canvas ───────────────────────────────────
 function MouseCanvas() {
@@ -76,10 +183,7 @@ function MouseCanvas() {
       });
     }
 
-    // Mouse events
     const onMouseMove = (e) => { pointer.current = { x: e.clientX, y: e.clientY }; };
-
-    // Touch events — spotlight + trail
     const onTouchMove = (e) => {
       const t = e.touches[0];
       pointer.current = { x: t.clientX, y: t.clientY };
@@ -97,8 +201,6 @@ function MouseCanvas() {
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Spotlight glow
       const radius = IS_TOUCH ? 220 : 280;
       const grd = ctx.createRadialGradient(pointer.current.x, pointer.current.y, 0, pointer.current.x, pointer.current.y, radius);
       grd.addColorStop(0, "rgba(0,255,200,0.08)");
@@ -106,7 +208,6 @@ function MouseCanvas() {
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Touch trail — comet-like dots
       if (IS_TOUCH && trailDots.current.length > 0) {
         trailDots.current.forEach((dot, i) => {
           dot.life -= 0.035;
@@ -118,7 +219,6 @@ function MouseCanvas() {
               ctx.arc(dot.x, dot.y, r, 0, Math.PI * 2);
               ctx.fillStyle = `rgba(0,255,200,${dot.life * 0.7 * progress})`;
               ctx.fill();
-              // Subtle ring around each trail dot
               if (progress > 0.6) {
                 ctx.beginPath();
                 ctx.arc(dot.x, dot.y, r * 2.5, 0, Math.PI * 2);
@@ -132,7 +232,6 @@ function MouseCanvas() {
         trailDots.current = trailDots.current.filter((d) => d.life > 0);
       }
 
-      // Particles
       const pts = particles.current;
       pts.forEach((p) => {
         const dx = pointer.current.x - p.x;
@@ -150,14 +249,12 @@ function MouseCanvas() {
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
-
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(0,255,200,${p.alpha})`;
         ctx.fill();
       });
 
-      // Connection lines
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
           const dx = pts[i].x - pts[j].x;
@@ -173,7 +270,6 @@ function MouseCanvas() {
           }
         }
       }
-
       raf.current = requestAnimationFrame(draw);
     };
     draw();
@@ -202,16 +298,11 @@ function Cursor() {
     if (IS_TOUCH) return;
     const onMove = (e) => { pos.current = { x: e.clientX, y: e.clientY }; };
     window.addEventListener("mousemove", onMove);
-
     const animate = () => {
       ring.current.x += (pos.current.x - ring.current.x) * 0.12;
       ring.current.y += (pos.current.y - ring.current.y) * 0.12;
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${pos.current.x - 4}px, ${pos.current.y - 4}px)`;
-      }
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate(${ring.current.x - 18}px, ${ring.current.y - 18}px)`;
-      }
+      if (dotRef.current) dotRef.current.style.transform = `translate(${pos.current.x - 4}px, ${pos.current.y - 4}px)`;
+      if (ringRef.current) ringRef.current.style.transform = `translate(${ring.current.x - 18}px, ${ring.current.y - 18}px)`;
       raf.current = requestAnimationFrame(animate);
     };
     animate();
@@ -235,14 +326,12 @@ function TouchRippleOverlay() {
 
   useEffect(() => {
     if (!IS_TOUCH) return;
-
     const onTouch = (e) => {
       const touch = e.touches[0];
       const id = nextId.current++;
       setRipples((prev) => [...prev.slice(-8), { id, x: touch.clientX, y: touch.clientY }]);
       setTimeout(() => setRipples((prev) => prev.filter((r) => r.id !== id)), 1100);
     };
-
     window.addEventListener("touchstart", onTouch, { passive: true });
     return () => window.removeEventListener("touchstart", onTouch);
   }, []);
@@ -253,49 +342,12 @@ function TouchRippleOverlay() {
     <div className="fixed inset-0 z-[200] pointer-events-none">
       {ripples.map((r) => (
         <div key={r.id} style={{ position: "absolute", left: r.x, top: r.y, transform: "translate(-50%, -50%)" }}>
-          {/* 3 expanding rings with staggered delay */}
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                width: 0,
-                height: 0,
-                borderRadius: "50%",
-                border: `${1.8 - i * 0.4}px solid rgba(0,255,200,${0.85 - i * 0.25})`,
-                transform: "translate(-50%, -50%)",
-                animation: `touchRipple ${0.65 + i * 0.18}s ${i * 0.09}s cubic-bezier(0.2,0.8,0.4,1) forwards`,
-              }}
-            />
+            <div key={i} style={{ position: "absolute", width: 0, height: 0, borderRadius: "50%", border: `${1.8 - i * 0.4}px solid rgba(0,255,200,${0.85 - i * 0.25})`, transform: "translate(-50%, -50%)", animation: `touchRipple ${0.65 + i * 0.18}s ${i * 0.09}s cubic-bezier(0.2,0.8,0.4,1) forwards` }} />
           ))}
-          {/* Center burst dot */}
-          <div
-            style={{
-              position: "absolute",
-              width: 10,
-              height: 10,
-              background: CYAN,
-              borderRadius: "50%",
-              transform: "translate(-50%, -50%)",
-              animation: "touchDotBurst 0.45s cubic-bezier(0.2,0.8,0.4,1) forwards",
-              boxShadow: `0 0 14px ${CYAN}, 0 0 28px rgba(0,255,200,0.5)`,
-            }}
-          />
-          {/* Particle sparks */}
+          <div style={{ position: "absolute", width: 10, height: 10, background: CYAN, borderRadius: "50%", transform: "translate(-50%, -50%)", animation: "touchDotBurst 0.45s cubic-bezier(0.2,0.8,0.4,1) forwards", boxShadow: `0 0 14px ${CYAN}, 0 0 28px rgba(0,255,200,0.5)` }} />
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={`spark-${i}`}
-              style={{
-                position: "absolute",
-                width: 3,
-                height: 3,
-                background: CYAN,
-                borderRadius: "50%",
-                transform: "translate(-50%, -50%)",
-                animation: `touchSpark${i} 0.5s ${i * 0.03}s ease-out forwards`,
-                opacity: 0,
-              }}
-            />
+            <div key={`spark-${i}`} style={{ position: "absolute", width: 3, height: 3, background: CYAN, borderRadius: "50%", transform: "translate(-50%, -50%)", animation: `touchSpark${i} 0.5s ${i * 0.03}s ease-out forwards`, opacity: 0 }} />
           ))}
         </div>
       ))}
@@ -303,7 +355,7 @@ function TouchRippleOverlay() {
   );
 }
 
-// ── Mobile touch glow dot (follows drag) ─────────────────────────────────────
+// ── Mobile touch glow dot ─────────────────────────────────────────────────────
 function MobileTouchDot() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
@@ -313,7 +365,6 @@ function MobileTouchDot() {
 
   useEffect(() => {
     if (!IS_TOUCH) return;
-
     const onMove = (e) => {
       const t = e.touches[0];
       pos.current = { x: t.clientX, y: t.clientY };
@@ -324,20 +375,14 @@ function MobileTouchDot() {
       if (dotRef.current) dotRef.current.style.opacity = "0";
       if (ringRef.current) ringRef.current.style.opacity = "0";
     };
-
     const animate = () => {
       current.current.x += (pos.current.x - current.current.x) * 0.18;
       current.current.y += (pos.current.y - current.current.y) * 0.18;
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${current.current.x - 6}px, ${current.current.y - 6}px)`;
-      }
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate(${current.current.x - 22}px, ${current.current.y - 22}px)`;
-      }
+      if (dotRef.current) dotRef.current.style.transform = `translate(${current.current.x - 6}px, ${current.current.y - 6}px)`;
+      if (ringRef.current) ringRef.current.style.transform = `translate(${current.current.x - 22}px, ${current.current.y - 22}px)`;
       raf.current = requestAnimationFrame(animate);
     };
     animate();
-
     window.addEventListener("touchmove", onMove, { passive: true });
     window.addEventListener("touchend", onEnd);
     window.addEventListener("touchcancel", onEnd);
@@ -353,32 +398,8 @@ function MobileTouchDot() {
 
   return (
     <>
-      {/* Glowing center dot */}
-      <div
-        ref={dotRef}
-        className="fixed top-0 left-0 z-[9998] pointer-events-none rounded-full"
-        style={{
-          width: 12,
-          height: 12,
-          background: CYAN,
-          opacity: 0,
-          transition: "opacity 0.25s ease",
-          boxShadow: `0 0 18px ${CYAN}, 0 0 36px rgba(0,255,200,0.45), 0 0 60px rgba(0,255,200,0.2)`,
-        }}
-      />
-      {/* Trailing ring */}
-      <div
-        ref={ringRef}
-        className="fixed top-0 left-0 z-[9998] pointer-events-none rounded-full"
-        style={{
-          width: 44,
-          height: 44,
-          border: `1.5px solid rgba(0,255,200,0.45)`,
-          opacity: 0,
-          transition: "opacity 0.25s ease",
-          boxShadow: `inset 0 0 8px rgba(0,255,200,0.08)`,
-        }}
-      />
+      <div ref={dotRef} className="fixed top-0 left-0 z-[9998] pointer-events-none rounded-full" style={{ width: 12, height: 12, background: CYAN, opacity: 0, transition: "opacity 0.25s ease", boxShadow: `0 0 18px ${CYAN}, 0 0 36px rgba(0,255,200,0.45)` }} />
+      <div ref={ringRef} className="fixed top-0 left-0 z-[9998] pointer-events-none rounded-full" style={{ width: 44, height: 44, border: `1.5px solid rgba(0,255,200,0.45)`, opacity: 0, transition: "opacity 0.25s ease" }} />
     </>
   );
 }
@@ -388,43 +409,14 @@ const NAV_ICONS = { Home: "⌂", About: "◉", Projects: "⬡", Experience: "◈
 
 function MobileBottomNav({ active, onNavClick }) {
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
-      style={{
-        background: "rgba(5,10,14,0.96)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        borderTop: "1px solid rgba(0,255,200,0.1)",
-        animation: "slideUp 0.55s 0.6s cubic-bezier(0.22,1,0.36,1) both",
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
-      }}
-    >
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden" style={{ background: "rgba(5,10,14,0.96)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderTop: "1px solid rgba(0,255,200,0.1)", animation: "slideUp 0.55s 0.6s cubic-bezier(0.22,1,0.36,1) both", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="flex justify-around items-center py-2 px-1">
         {NAV_ITEMS.map((n) => (
-          <button
-            key={n}
-            onClick={() => {
-              onNavClick(n);
-              if (navigator.vibrate) navigator.vibrate(8);
-            }}
-            className="flex flex-col items-center gap-0.5 transition-all duration-200 rounded-xl"
-            style={{
-              color: active === n ? CYAN : "rgba(255,255,255,0.38)",
-              background: active === n ? "rgba(0,255,200,0.09)" : "transparent",
-              padding: "8px 14px",
-              transform: active === n ? "translateY(-2px)" : "translateY(0)",
-              minWidth: 52,
-            }}
-          >
-            <span style={{ fontSize: 19, lineHeight: 1, filter: active === n ? `drop-shadow(0 0 6px ${CYAN})` : "none", transition: "filter 0.2s" }}>
-              {NAV_ICONS[n]}
-            </span>
-            <span style={{ fontSize: 8, fontFamily: "'Space Mono',monospace", letterSpacing: "0.06em", marginTop: 2 }}>
-              {n}
-            </span>
-            {active === n && (
-              <div style={{ width: 20, height: 2, background: CYAN, borderRadius: 1, marginTop: 2, boxShadow: `0 0 6px ${CYAN}` }} />
-            )}
+          <button key={n} onClick={() => { onNavClick(n); if (navigator.vibrate) navigator.vibrate(8); }} className="flex flex-col items-center gap-0.5 transition-all duration-200 rounded-xl"
+            style={{ color: active === n ? CYAN : "rgba(255,255,255,0.38)", background: active === n ? "rgba(0,255,200,0.09)" : "transparent", padding: "8px 14px", transform: active === n ? "translateY(-2px)" : "translateY(0)", minWidth: 52 }}>
+            <span style={{ fontSize: 19, lineHeight: 1, filter: active === n ? `drop-shadow(0 0 6px ${CYAN})` : "none", transition: "filter 0.2s" }}>{NAV_ICONS[n]}</span>
+            <span style={{ fontSize: 8, fontFamily: "'Space Mono',monospace", letterSpacing: "0.06em", marginTop: 2 }}>{n}</span>
+            {active === n && <div style={{ width: 20, height: 2, background: CYAN, borderRadius: 1, marginTop: 2, boxShadow: `0 0 6px ${CYAN}` }} />}
           </button>
         ))}
       </div>
@@ -448,10 +440,9 @@ function TiltParallax() {
   return null;
 }
 
-// ── Swipe hint (mobile first load) ───────────────────────────────────────────
+// ── Swipe hint ────────────────────────────────────────────────────────────────
 function SwipeHint() {
   const [visible, setVisible] = useState(true);
-
   useEffect(() => {
     if (!IS_TOUCH) return;
     const t = setTimeout(() => setVisible(false), 3200);
@@ -459,23 +450,11 @@ function SwipeHint() {
     window.addEventListener("touchstart", dismiss, { once: true });
     return () => { clearTimeout(t); window.removeEventListener("touchstart", dismiss); };
   }, []);
-
   if (!IS_TOUCH || !visible) return null;
-
   return (
-    <div
-      className="fixed z-40 pointer-events-none flex flex-col items-center gap-2"
-      style={{
-        bottom: 90,
-        left: "50%",
-        transform: "translateX(-50%)",
-        animation: "fadeInOut 3.2s ease forwards",
-      }}
-    >
+    <div className="fixed z-40 pointer-events-none flex flex-col items-center gap-2" style={{ bottom: 90, left: "50%", transform: "translateX(-50%)", animation: "fadeInOut 3.2s ease forwards" }}>
       <div style={{ animation: "swipeUpAnim 1.4s ease-in-out infinite", color: CYAN, fontSize: 22, filter: `drop-shadow(0 0 8px ${CYAN})` }}>↑</div>
-      <span style={{ fontFamily: "'Space Mono',monospace", fontSize: 10, color: "rgba(0,255,200,0.5)", letterSpacing: "0.25em", textTransform: "uppercase" }}>
-        swipe to explore
-      </span>
+      <span style={{ fontFamily: "'Space Mono',monospace", fontSize: 10, color: "rgba(0,255,200,0.5)", letterSpacing: "0.25em", textTransform: "uppercase" }}>swipe to explore</span>
     </div>
   );
 }
@@ -484,17 +463,7 @@ function SwipeHint() {
 function GridBg() {
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0,255,200,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,200,0.03) 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-          animation: "gridScroll 20s linear infinite",
-          // Tilt parallax offset — only on mobile via CSS vars
-          transform: IS_TOUCH ? "translate(calc(var(--tilt-x, 0) * 8px), calc(var(--tilt-y, 0) * 6px))" : "none",
-          transition: "transform 0.3s ease-out",
-        }}
-      />
+      <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(rgba(0,255,200,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,200,0.03) 1px, transparent 1px)`, backgroundSize: "60px 60px", animation: "gridScroll 20s linear infinite", transform: IS_TOUCH ? "translate(calc(var(--tilt-x, 0) * 8px), calc(var(--tilt-y, 0) * 6px))" : "none", transition: "transform 0.3s ease-out" }} />
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,255,200,0.06) 0%, transparent 70%)" }} />
     </div>
   );
@@ -566,15 +535,76 @@ function SkillBar({ label, pct, delay = 0 }) {
   );
 }
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
-function StatCard({ label, value }) {
+// ── Stat card — FIXED with count-up animation ─────────────────────────────────
+function StatCard({ label, value, num }) {
+  const [count, setCount] = useState(0);
+  const [animated, setAnimated] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting && !animated) {
+          setAnimated(true);
+          const duration = 1200;
+          const steps = 40;
+          const increment = num / steps;
+          let current = 0;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= num) {
+              setCount(num);
+              clearInterval(timer);
+            } else {
+              setCount(Math.floor(current));
+            }
+          }, duration / steps);
+        }
+      },
+      { threshold: 0.4 }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [num, animated]);
+
   return (
-    <div className="border rounded-lg p-5 text-center transition-all duration-300 group"
-      style={{ borderColor: "rgba(0,255,200,0.12)", background: "rgba(0,255,200,0.03)" }}
-      onMouseOver={(e) => { e.currentTarget.style.borderColor = "rgba(0,255,200,0.4)"; e.currentTarget.style.background = "rgba(0,255,200,0.06)"; }}
-      onMouseOut={(e) => { e.currentTarget.style.borderColor = "rgba(0,255,200,0.12)"; e.currentTarget.style.background = "rgba(0,255,200,0.03)"; }}>
-      <p className="text-3xl font-black mb-1" style={{ color: CYAN }}>{value}</p>
-      <p className="text-xs" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.4)" }}>{label}</p>
+    <div
+      ref={ref}
+      className="border rounded-xl p-4 text-center transition-all duration-300 flex flex-col items-center justify-center"
+      style={{
+        borderColor: "rgba(0,255,200,0.15)",
+        background: "rgba(0,255,200,0.03)",
+        minHeight: 90,
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.borderColor = "rgba(0,255,200,0.5)";
+        e.currentTarget.style.background = "rgba(0,255,200,0.07)";
+        e.currentTarget.style.transform = "translateY(-3px)";
+        e.currentTarget.style.boxShadow = `0 8px 30px rgba(0,255,200,0.12)`;
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.borderColor = "rgba(0,255,200,0.15)";
+        e.currentTarget.style.background = "rgba(0,255,200,0.03)";
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "none";
+      }}
+    >
+      {/* Value with count-up */}
+      <p className="font-black leading-none mb-1.5" style={{ color: CYAN, fontSize: "clamp(1.4rem, 4vw, 1.9rem)" }}>
+        {animated ? `${count}+` : value}
+      </p>
+      {/* Label — always fully visible */}
+      <p style={{
+        fontFamily: "'Space Mono',monospace",
+        color: "rgba(255,255,255,0.5)",
+        fontSize: "clamp(9px, 2vw, 11px)",
+        lineHeight: 1.3,
+        textAlign: "center",
+        wordBreak: "break-word",
+        whiteSpace: "normal",
+      }}>
+        {label}
+      </p>
     </div>
   );
 }
@@ -597,7 +627,6 @@ function ProjectCard({ project, index }) {
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      // Touch support: toggle on tap
       onTouchStart={() => setHovered(true)}
       onTouchEnd={() => setTimeout(() => setHovered(false), 600)}
       className="relative border rounded-lg p-6 transition-all duration-300 overflow-hidden"
@@ -657,19 +686,14 @@ function DotNav({ active, onDotClick }) {
   );
 }
 
-// ── Floating tech orbs (hero decoration) ──────────────────────────────────────
+// ── Floating tech orbs ────────────────────────────────────────────────────────
 function TechOrbs() {
   const orbs = ["⚛", "🔷", "🟩", "⬡", "◈", "⬢"];
   return (
     <div className="absolute right-0 top-0 w-full h-full pointer-events-none overflow-hidden hidden lg:block">
       {orbs.map((o, i) => (
         <div key={i} className="absolute text-2xl opacity-10"
-          style={{
-            right: `${10 + (i % 3) * 15}%`,
-            top: `${15 + Math.floor(i / 3) * 35}%`,
-            animation: `float${i % 3} ${4 + i}s ease-in-out infinite`,
-            color: CYAN,
-          }}>
+          style={{ right: `${10 + (i % 3) * 15}%`, top: `${15 + Math.floor(i / 3) * 35}%`, animation: `float${i % 3} ${4 + i}s ease-in-out infinite`, color: CYAN }}>
           {o}
         </div>
       ))}
@@ -677,13 +701,56 @@ function TechOrbs() {
   );
 }
 
+// ── Copy email button ─────────────────────────────────────────────────────────
+function CopyEmailBtn({ email, showToast }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      showToast("Email copied to clipboard!");
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      showToast("Copy failed — try manually.");
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      style={{
+        fontFamily: "'Space Mono',monospace",
+        fontSize: 12,
+        color: copied ? "#000" : "rgba(255,255,255,0.45)",
+        background: copied ? CYAN : "transparent",
+        border: `1px solid ${copied ? CYAN : "rgba(255,255,255,0.15)"}`,
+        borderRadius: 6,
+        padding: "8px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        cursor: IS_TOUCH ? "auto" : "none",
+        transition: "all 0.25s ease",
+        whiteSpace: "nowrap",
+      }}
+      onMouseOver={(e) => { if (!copied) { e.currentTarget.style.borderColor = `rgba(0,255,200,0.4)`; e.currentTarget.style.color = CYAN; } }}
+      onMouseOut={(e) => { if (!copied) { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.color = "rgba(255,255,255,0.45)"; } }}
+    >
+      <span>{copied ? "✓" : "⎘"}</span>
+      <span>{copied ? "Copied!" : email}</span>
+    </button>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Portfolio() {
   const [activeNav, setActiveNav] = useState("Home");
-  const [setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: "" });
   const containerRef = useRef(null);
+  const toastTimer = useRef(null);
 
   const homeRef = useRef(null);
   const aboutRef = useRef(null);
@@ -694,6 +761,12 @@ export default function Portfolio() {
   const sectionRefs = useMemo(() => ({
     Home: homeRef, About: aboutRef, Projects: projectsRef, Experience: experienceRef, Contact: contactRef,
   }), []);
+
+  const showToast = useCallback((message) => {
+    clearTimeout(toastTimer.current);
+    setToast({ visible: true, message });
+    toastTimer.current = setTimeout(() => setToast({ visible: false, message: "" }), 2800);
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -708,10 +781,9 @@ export default function Portfolio() {
     return () => container.removeEventListener("scroll", onScroll);
   }, [sectionRefs]);
 
- const scrollTo = useCallback((section) => {
-  sectionRefs[section].current?.scrollIntoView({ behavior: "smooth" });
-  setMenuOpen(false);
-}, [sectionRefs, setMenuOpen]); // Added setMenuOpen here
+  const scrollTo = useCallback((section) => {
+    sectionRefs[section].current?.scrollIntoView({ behavior: "smooth" });
+  }, [sectionRefs]);
 
   const visibleProjects = showAll ? DATA.projects : DATA.projects.slice(0, 3);
 
@@ -720,10 +792,8 @@ export default function Portfolio() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Space+Mono&display=swap');
 
-        /* Cursor hide for desktop only */
         ${!IS_TOUCH ? "*, *::before, *::after { cursor: none !important; }" : ""}
 
-        /* CSS vars for gyroscope tilt */
         :root { --tilt-x: 0; --tilt-y: 0; }
 
         @keyframes gridScroll { 0%{transform:translateY(0);} 100%{transform:translateY(60px);} }
@@ -736,17 +806,8 @@ export default function Portfolio() {
         @keyframes float2 { 0%,100%{transform:translateY(0px) rotate(0deg);} 50%{transform:translateY(-22px) rotate(8deg);} }
         @keyframes scanPulse { 0%{opacity:0.02;} 50%{opacity:0.05;} 100%{opacity:0.02;} }
 
-        /* ── Mobile touch animations ── */
-        @keyframes touchRipple {
-          0%   { width: 0; height: 0; opacity: 1; }
-          100% { width: 150px; height: 150px; opacity: 0; }
-        }
-        @keyframes touchDotBurst {
-          0%   { transform: translate(-50%,-50%) scale(1); opacity: 1; }
-          60%  { transform: translate(-50%,-50%) scale(2.5); opacity: 0.6; }
-          100% { transform: translate(-50%,-50%) scale(4); opacity: 0; }
-        }
-        /* 6 spark directions */
+        @keyframes touchRipple { 0%{width:0;height:0;opacity:1;} 100%{width:150px;height:150px;opacity:0;} }
+        @keyframes touchDotBurst { 0%{transform:translate(-50%,-50%) scale(1);opacity:1;} 60%{transform:translate(-50%,-50%) scale(2.5);opacity:0.6;} 100%{transform:translate(-50%,-50%) scale(4);opacity:0;} }
         @keyframes touchSpark0 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(0px,-28px);} }
         @keyframes touchSpark1 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(24px,-16px);} }
         @keyframes touchSpark2 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(24px,16px);} }
@@ -754,20 +815,10 @@ export default function Portfolio() {
         @keyframes touchSpark4 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(-24px,16px);} }
         @keyframes touchSpark5 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(-24px,-16px);} }
 
-        @keyframes slideUp {
-          from { transform: translateY(100%); opacity: 0; }
-          to   { transform: translateY(0);    opacity: 1; }
-        }
-        @keyframes fadeInOut {
-          0%   { opacity: 0; transform: translateX(-50%) translateY(0); }
-          15%  { opacity: 1; }
-          75%  { opacity: 1; }
-          100% { opacity: 0; transform: translateX(-50%) translateY(-12px); }
-        }
-        @keyframes swipeUpAnim {
-          0%,100% { transform: translateY(0); opacity: 0.5; }
-          50%     { transform: translateY(-10px); opacity: 1; }
-        }
+        @keyframes slideUp { from{transform:translateY(100%);opacity:0;} to{transform:translateY(0);opacity:1;} }
+        @keyframes fadeInOut { 0%{opacity:0;transform:translateX(-50%) translateY(0);} 15%{opacity:1;} 75%{opacity:1;} 100%{opacity:0;transform:translateX(-50%) translateY(-12px);} }
+        @keyframes swipeUpAnim { 0%,100%{transform:translateY(0);opacity:0.5;} 50%{transform:translateY(-10px);opacity:1;} }
+        @keyframes statPop { 0%{transform:scale(0.85);opacity:0;} 100%{transform:scale(1);opacity:1;} }
 
         .fu1{animation:fadeUp 0.7s 0.00s ease both;}
         .fu2{animation:fadeUp 0.7s 0.15s ease both;}
@@ -775,33 +826,51 @@ export default function Portfolio() {
         .fu4{animation:fadeUp 0.7s 0.45s ease both;}
         .fu5{animation:fadeUp 0.7s 0.60s ease both;}
 
-        .snap-wrap { height:100vh; overflow-y:scroll; scroll-snap-type:y mandatory; scroll-behavior:smooth; }
-        .snap-wrap::-webkit-scrollbar { width:3px; }
-        .snap-wrap::-webkit-scrollbar-track { background:#050a0e; }
-        .snap-wrap::-webkit-scrollbar-thumb { background:rgba(0,255,200,0.25); border-radius:2px; }
-        .snap-sec { scroll-snap-align:start; scroll-snap-stop:always; min-height:100vh; position:relative; display:flex; align-items:center; }
-        .glow-text { text-shadow: 0 0 30px rgba(0,255,200,0.4); }
+        .snap-wrap{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;}
+        .snap-wrap::-webkit-scrollbar{width:3px;}
+        .snap-wrap::-webkit-scrollbar-track{background:#050a0e;}
+        .snap-wrap::-webkit-scrollbar-thumb{background:rgba(0,255,200,0.25);border-radius:2px;}
+        .snap-sec{scroll-snap-align:start;scroll-snap-stop:always;min-height:100vh;position:relative;display:flex;align-items:center;}
+        .glow-text{text-shadow:0 0 30px rgba(0,255,200,0.4);}
 
-        /* Mobile adjustments */
+        /* Stats grid: 2×2 on mobile, 4-col on sm+ */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+        @media (min-width: 480px) {
+          .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
         @media (max-width: 767px) {
           .snap-sec { padding-bottom: 68px; }
           .snap-wrap { -webkit-overflow-scrolling: touch; }
         }
       `}</style>
 
-      {/* ── Background layers ── */}
+      {/* Background layers */}
       <GridBg />
       <MouseCanvas />
       <Cursor />
       <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px)", animation: "scanPulse 8s ease infinite" }} />
 
-      {/* ── Mobile-only layers ── */}
+      {/* Mobile layers */}
       <TiltParallax />
       <TouchRippleOverlay />
       <MobileTouchDot />
       <SwipeHint />
 
-      {/* ── Navigation ── */}
+      {/* NEW: Scroll progress bar */}
+      <ScrollProgressBar containerRef={containerRef} />
+
+      {/* NEW: Toast notification */}
+      <Toast message={toast.message} visible={toast.visible} />
+
+      {/* NEW: Back to top button */}
+      <BackToTop containerRef={containerRef} scrollTo={scrollTo} />
+
+      {/* Navigation */}
       <DotNav active={activeNav} onDotClick={scrollTo} />
       <MobileBottomNav active={activeNav} onNavClick={scrollTo} />
 
@@ -811,7 +880,6 @@ export default function Portfolio() {
           <button onClick={() => scrollTo("Home")} className="font-black text-xl tracking-tight text-white" style={{ fontFamily: "'Space Mono',monospace" }}>
             <span style={{ color: CYAN }}>&lt;</span>Tallal<span style={{ color: CYAN }}>/&gt;</span>
           </button>
-          {/* Desktop links */}
           <div className="hidden md:flex items-center gap-1">
             {NAV_ITEMS.map((n) => (
               <button key={n} onClick={() => scrollTo(n)} className="px-4 py-2 text-sm rounded transition-all duration-200"
@@ -826,7 +894,6 @@ export default function Portfolio() {
               Hire Me
             </a>
           </div>
-          {/* Mobile: Hire Me button (since hamburger is removed) */}
           <a href={`mailto:${DATA.email}`} className="md:hidden px-4 py-1.5 text-xs border rounded"
             style={{ fontFamily: "'Space Mono',monospace", borderColor: CYAN, color: CYAN }}>
             Hire Me
@@ -834,7 +901,7 @@ export default function Portfolio() {
         </div>
       </nav>
 
-      {/* ── Snap container ── */}
+      {/* Snap container */}
       <div ref={containerRef} className="snap-wrap">
 
         {/* HERO */}
@@ -852,7 +919,8 @@ export default function Portfolio() {
             </div>
             <p className="fu4 max-w-xl text-lg leading-relaxed mb-10" style={{ opacity: 0, color: "rgba(255,255,255,0.5)" }}>{DATA.tagline}</p>
 
-            <div className="fu4 grid grid-cols-4 gap-3 max-w-lg mb-10" style={{ opacity: 0 }}>
+            {/* FIXED: Stats grid — 2×2 on mobile, 4-col on desktop */}
+            <div className="fu4 stats-grid max-w-lg mb-10" style={{ opacity: 0 }}>
               {DATA.stats.map((s) => <StatCard key={s.label} {...s} />)}
             </div>
 
@@ -957,15 +1025,20 @@ export default function Portfolio() {
         <section ref={contactRef} className="snap-sec px-6">
           <div className="max-w-3xl mx-auto w-full py-16 text-center">
             <SectionHeader label="04 / Contact" title="Let's Work Together" />
-            <p className="text-lg leading-relaxed mb-12 max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.5)" }}>
+            <p className="text-lg leading-relaxed mb-8 max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.5)" }}>
               I'm currently open to new opportunities. Whether you have a project in mind or just want to say hello, my inbox is always open.
             </p>
-            <a href={`mailto:${DATA.email}`} className="inline-block px-12 py-4 font-bold text-black rounded transition-all duration-200 hover:scale-105 active:scale-95"
-              style={{ fontFamily: "'Space Mono',monospace", background: CYAN, boxShadow: "0 0 40px rgba(0,255,200,0.3)" }}>
-              Say Hello →
-            </a>
 
-            <div className="grid grid-cols-3 gap-4 mt-14 max-w-md mx-auto">
+            {/* NEW: Copy email widget */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+              <a href={`mailto:${DATA.email}`} className="inline-block px-10 py-3.5 font-bold text-black rounded transition-all duration-200 hover:scale-105 active:scale-95"
+                style={{ fontFamily: "'Space Mono',monospace", background: CYAN, boxShadow: "0 0 40px rgba(0,255,200,0.3)", fontSize: 13 }}>
+                Say Hello →
+              </a>
+              <CopyEmailBtn email={DATA.email} showToast={showToast} />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mt-10 max-w-md mx-auto">
               {[
                 { label: "GitHub", url: DATA.github, icon: "⌥" },
                 { label: "LinkedIn", url: DATA.linkedin, icon: "◈" },
