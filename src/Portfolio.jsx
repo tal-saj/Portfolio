@@ -1,4 +1,47 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, createContext, useContext } from "react";
+
+// ── Theme definitions ──────────────────────────────────────────────────────────
+const THEME_DARK = {
+  bg: "#050a0e",
+  text: "rgba(255,255,255,0.88)",
+  textMuted: "rgba(255,255,255,0.5)",
+  textDim: "rgba(255,255,255,0.3)",
+  textDim2: "rgba(255,255,255,0.2)",
+  textDim3: "rgba(255,255,255,0.12)",
+  textDim4: "rgba(255,255,255,0.06)",
+  h2: "#ffffff",
+  cardBg: "rgba(255,255,255,0.02)",
+  cardBorder: "rgba(255,255,255,0.08)",
+  terminalBg: "rgba(0,0,0,0.3)",
+  navBg: (s) => s ? "rgba(5,10,14,0.92)" : "transparent",
+  navBorder: (s) => s ? "1px solid rgba(255,255,255,0.06)" : "none",
+  gridLine: "rgba(0,255,200,0.03)",
+  scrollbarTrack: "#050a0e",
+  mobileNavBg: "rgba(5,10,14,0.96)",
+  mobileNavBorder: "rgba(0,255,200,0.1)",
+};
+
+const THEME_LIGHT = {
+  bg: "#eef2f7",
+  text: "rgba(10,20,40,0.88)",
+  textMuted: "rgba(10,20,40,0.55)",
+  textDim: "rgba(10,20,40,0.38)",
+  textDim2: "rgba(10,20,40,0.28)",
+  textDim3: "rgba(10,20,40,0.15)",
+  textDim4: "rgba(10,20,40,0.08)",
+  h2: "#0d1520",
+  cardBg: "rgba(255,255,255,0.65)",
+  cardBorder: "rgba(0,0,0,0.09)",
+  terminalBg: "rgba(0,0,0,0.05)",
+  navBg: (s) => s ? "rgba(238,242,247,0.94)" : "transparent",
+  navBorder: (s) => s ? "1px solid rgba(0,0,0,0.07)" : "none",
+  gridLine: "rgba(0,150,120,0.06)",
+  scrollbarTrack: "#eef2f7",
+  mobileNavBg: "rgba(238,242,247,0.96)",
+  mobileNavBorder: "rgba(0,0,0,0.09)",
+};
+
+const ThemeContext = createContext({ isDark: true, T: THEME_DARK });
 
 const DATA = {
   name: "Tallal Sajid",
@@ -31,7 +74,17 @@ const DATA = {
   experience: [
     { role: "Junior Web Developer", company: "ScriptExp Private Limited", period: "Aug 2025 – Present", desc: "Worked on 5+ web applications, collaborated with a team of 10+ developers, and fixed 18+ bugs while writing clean and efficient code." },
     { role: "Freelancer & Vibe Coder", company: "Remote", period: "Jun 2024 – Aug 2025", desc: "Developed and contributed in 10+ projects across platforms." },
-    { role: "Backend Developer & Marketing Analyst", company: "Raqqmayya", period: "Feb 2024 – Jun 2024", desc: "Developed backend logic and researched best marketing techniques for clients." },
+    { role: "Backend Developer & Marketing Analyst (Internship)", company: "Raqqmayya", period: "Feb 2024 – Jun 2024", desc: "Developed backend logic and researched best marketing techniques for clients." },
+  ],
+  education: [
+    {
+      degree: "Bachelor of Science in Software Engineering",
+      institution: "Air University",
+      location: "Islamabad, Pakistan",
+      period: "2021 – 2025",
+      desc: "Completed a rigorous four-year program covering software engineering principles, algorithms, data structures, database systems, full-stack web development, and software project management — building the foundation for a career in modern application development.",
+      highlights: ["Software Engineering", "Algorithms & DSA", "Web Development", "Database Systems", "Project Management"],
+    }
   ],
   stats: [
     { label: "Projects Shipped", value: "10+", num: 10 },
@@ -41,13 +94,14 @@ const DATA = {
   ],
 };
 
-const NAV_ITEMS = ["Home", "About", "Projects", "Experience", "Contact"];
+const NAV_ITEMS = ["Home", "About", "Projects", "Experience", "Education", "Contact"];
 const CYAN = "#00ffc8";
 
 const IS_TOUCH = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
 // ── Toast notification ────────────────────────────────────────────────────────
 function Toast({ message, visible }) {
+  const { T } = useContext(ThemeContext);
   return (
     <div
       style={{
@@ -58,7 +112,7 @@ function Toast({ message, visible }) {
         opacity: visible ? 1 : 0,
         transition: "all 0.35s cubic-bezier(0.22,1,0.36,1)",
         zIndex: 9999,
-        background: "rgba(5,10,14,0.95)",
+        background: T.terminalBg,
         border: `1px solid rgba(0,255,200,0.4)`,
         borderRadius: 8,
         padding: "10px 20px",
@@ -72,7 +126,7 @@ function Toast({ message, visible }) {
       }}
     >
       <span style={{ color: CYAN, fontSize: 14 }}>✓</span>
-      <span style={{ fontFamily: "'Space Mono',monospace", fontSize: 12, color: "rgba(255,255,255,0.85)" }}>{message}</span>
+      <span style={{ fontFamily: "'Space Mono',monospace", fontSize: 12, color: T.text }}>{message}</span>
     </div>
   );
 }
@@ -111,6 +165,7 @@ function ScrollProgressBar({ containerRef }) {
 // ── Back to top button ────────────────────────────────────────────────────────
 function BackToTop({ containerRef, scrollTo }) {
   const [visible, setVisible] = useState(false);
+  const { T } = useContext(ThemeContext);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -132,7 +187,7 @@ function BackToTop({ containerRef, scrollTo }) {
         height: 44,
         borderRadius: "50%",
         border: `1px solid rgba(0,255,200,0.35)`,
-        background: "rgba(5,10,14,0.9)",
+        background: T.terminalBg,
         color: CYAN,
         fontSize: 18,
         display: "flex",
@@ -147,7 +202,7 @@ function BackToTop({ containerRef, scrollTo }) {
         boxShadow: visible ? `0 0 20px rgba(0,255,200,0.15)` : "none",
       }}
       onMouseOver={(e) => { e.currentTarget.style.background = CYAN; e.currentTarget.style.color = "#000"; }}
-      onMouseOut={(e) => { e.currentTarget.style.background = "rgba(5,10,14,0.9)"; e.currentTarget.style.color = CYAN; }}
+      onMouseOut={(e) => { e.currentTarget.style.background = T.terminalBg; e.currentTarget.style.color = CYAN; }}
     >
       ↑
     </button>
@@ -406,18 +461,19 @@ function MobileTouchDot() {
 }
 
 // ── Mobile bottom nav ─────────────────────────────────────────────────────────
-const NAV_ICONS = { Home: "⌂", About: "◉", Projects: "⬡", Experience: "◈", Contact: "✉" };
+const NAV_ICONS = { Home: "⌂", About: "◉", Projects: "⬡", Experience: "◈", Education: "✦", Contact: "✉" };
 
 function MobileBottomNav({ active, onNavClick }) {
+  const { T } = useContext(ThemeContext);
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden" style={{ background: "rgba(5,10,14,0.96)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderTop: "1px solid rgba(0,255,200,0.1)", animation: "slideUp 0.55s 0.6s cubic-bezier(0.22,1,0.36,1) both", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden" style={{ background: T.mobileNavBg, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderTop: `1px solid ${T.mobileNavBorder}`, animation: "slideUp 0.55s 0.6s cubic-bezier(0.22,1,0.36,1) both", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="flex justify-around items-center py-2 px-1">
         {NAV_ITEMS.map((n) => (
           <button key={n} onClick={() => { onNavClick(n); if (navigator.vibrate) navigator.vibrate(8); }} className="flex flex-col items-center gap-0.5 transition-all duration-200 rounded-xl"
-            style={{ color: active === n ? CYAN : "rgba(255,255,255,0.38)", background: active === n ? "rgba(0,255,200,0.09)" : "transparent", padding: "8px 14px", transform: active === n ? "translateY(-2px)" : "translateY(0)", minWidth: 52 }}>
-            <span style={{ fontSize: 19, lineHeight: 1, filter: active === n ? `drop-shadow(0 0 6px ${CYAN})` : "none", transition: "filter 0.2s" }}>{NAV_ICONS[n]}</span>
-            <span style={{ fontSize: 8, fontFamily: "'Space Mono',monospace", letterSpacing: "0.06em", marginTop: 2 }}>{n}</span>
-            {active === n && <div style={{ width: 20, height: 2, background: CYAN, borderRadius: 1, marginTop: 2, boxShadow: `0 0 6px ${CYAN}` }} />}
+            style={{ color: active === n ? CYAN : T.textDim, background: active === n ? "rgba(0,255,200,0.09)" : "transparent", padding: "6px 10px", transform: active === n ? "translateY(-2px)" : "translateY(0)", minWidth: 44 }}>
+            <span style={{ fontSize: 17, lineHeight: 1, filter: active === n ? `drop-shadow(0 0 6px ${CYAN})` : "none", transition: "filter 0.2s" }}>{NAV_ICONS[n]}</span>
+            <span style={{ fontSize: 7, fontFamily: "'Space Mono',monospace", letterSpacing: "0.06em", marginTop: 2 }}>{n}</span>
+            {active === n && <div style={{ width: 16, height: 2, background: CYAN, borderRadius: 1, marginTop: 2, boxShadow: `0 0 6px ${CYAN}` }} />}
           </button>
         ))}
       </div>
@@ -462,9 +518,10 @@ function SwipeHint() {
 
 // ── Grid background ───────────────────────────────────────────────────────────
 function GridBg() {
+  const { T } = useContext(ThemeContext);
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-      <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(rgba(0,255,200,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,200,0.03) 1px, transparent 1px)`, backgroundSize: "60px 60px", animation: "gridScroll 20s linear infinite", transform: IS_TOUCH ? "translate(calc(var(--tilt-x, 0) * 8px), calc(var(--tilt-y, 0) * 6px))" : "none", transition: "transform 0.3s ease-out" }} />
+      <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(${T.gridLine} 1px, transparent 1px), linear-gradient(90deg, ${T.gridLine} 1px, transparent 1px)`, backgroundSize: "60px 60px", animation: "gridScroll 20s linear infinite", transform: IS_TOUCH ? "translate(calc(var(--tilt-x, 0) * 8px), calc(var(--tilt-y, 0) * 6px))" : "none", transition: "transform 0.3s ease-out" }} />
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,255,200,0.06) 0%, transparent 70%)" }} />
     </div>
   );
@@ -507,8 +564,9 @@ function TypeWriter({ strings, speed = 70 }) {
 
 // ── Skill badge ───────────────────────────────────────────────────────────────
 function SkillBadge({ label }) {
+  const { T } = useContext(ThemeContext);
   return (
-    <span className="px-3 py-1 text-xs border rounded-sm" style={{ fontFamily: "'Space Mono',monospace", borderColor: "rgba(0,255,200,0.3)", color: "#67e8f9", background: "rgba(0,255,200,0.05)" }}>
+    <span className="px-3 py-1 text-xs border rounded-sm" style={{ fontFamily: "'Space Mono',monospace", borderColor: "rgba(0,255,200,0.3)", color: "#00c8a0", background: T.isDark ? "rgba(0,255,200,0.05)" : "rgba(0,200,160,0.08)" }}>
       {label}
     </span>
   );
@@ -518,6 +576,7 @@ function SkillBadge({ label }) {
 function SkillBar({ label, pct, delay = 0 }) {
   const [width, setWidth] = useState(0);
   const ref = useRef(null);
+  const { T } = useContext(ThemeContext);
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setTimeout(() => setWidth(pct), delay); }, { threshold: 0.3 });
     if (ref.current) obs.observe(ref.current);
@@ -526,21 +585,22 @@ function SkillBar({ label, pct, delay = 0 }) {
   return (
     <div ref={ref} className="mb-4">
       <div className="flex justify-between mb-1">
-        <span className="text-xs" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.6)" }}>{label}</span>
+        <span className="text-xs" style={{ fontFamily: "'Space Mono',monospace", color: T.textMuted }}>{label}</span>
         <span className="text-xs" style={{ fontFamily: "'Space Mono',monospace", color: CYAN }}>{pct}%</span>
       </div>
-      <div className="h-px w-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+      <div className="h-px w-full" style={{ background: T.cardBorder }}>
         <div className="h-px transition-all duration-1000 ease-out" style={{ width: `${width}%`, background: `linear-gradient(90deg, ${CYAN}, #a855f7)` }} />
       </div>
     </div>
   );
 }
 
-// ── Stat card — FIXED with count-up animation ─────────────────────────────────
+// ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, num }) {
   const [count, setCount] = useState(0);
   const [animated, setAnimated] = useState(false);
   const ref = useRef(null);
+  const { T } = useContext(ThemeContext);
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -574,30 +634,28 @@ function StatCard({ label, value, num }) {
       className="border rounded-xl p-4 text-center transition-all duration-300 flex flex-col items-center justify-center"
       style={{
         borderColor: "rgba(0,255,200,0.15)",
-        background: "rgba(0,255,200,0.03)",
+        background: T.cardBg,
         minHeight: 90,
       }}
       onMouseOver={(e) => {
         e.currentTarget.style.borderColor = "rgba(0,255,200,0.5)";
-        e.currentTarget.style.background = "rgba(0,255,200,0.07)";
+        e.currentTarget.style.background = T.isDark ? "rgba(0,255,200,0.07)" : "rgba(0,255,200,0.05)";
         e.currentTarget.style.transform = "translateY(-3px)";
         e.currentTarget.style.boxShadow = `0 8px 30px rgba(0,255,200,0.12)`;
       }}
       onMouseOut={(e) => {
         e.currentTarget.style.borderColor = "rgba(0,255,200,0.15)";
-        e.currentTarget.style.background = "rgba(0,255,200,0.03)";
+        e.currentTarget.style.background = T.cardBg;
         e.currentTarget.style.transform = "translateY(0)";
         e.currentTarget.style.boxShadow = "none";
       }}
     >
-      {/* Value with count-up */}
       <p className="font-black leading-none mb-1.5" style={{ color: CYAN, fontSize: "clamp(1.4rem, 4vw, 1.9rem)" }}>
         {animated ? `${count}+` : value}
       </p>
-      {/* Label — always fully visible */}
       <p style={{
         fontFamily: "'Space Mono',monospace",
-        color: "rgba(255,255,255,0.5)",
+        color: T.textMuted,
         fontSize: "clamp(9px, 2vw, 11px)",
         lineHeight: 1.3,
         textAlign: "center",
@@ -612,10 +670,11 @@ function StatCard({ label, value, num }) {
 
 // ── Section header ────────────────────────────────────────────────────────────
 function SectionHeader({ label, title }) {
+  const { T } = useContext(ThemeContext);
   return (
     <div className="mb-12">
       <p className="text-xs tracking-[0.3em] mb-3 uppercase" style={{ fontFamily: "'Space Mono',monospace", color: CYAN }}>{label}</p>
-      <h2 className="text-4xl md:text-5xl font-black text-white leading-tight">{title}</h2>
+      <h2 className="text-4xl md:text-5xl font-black leading-tight" style={{ color: T.h2 }}>{title}</h2>
       <div className="mt-4 h-px w-16" style={{ background: CYAN }} />
     </div>
   );
@@ -624,6 +683,7 @@ function SectionHeader({ label, title }) {
 // ── Project card ──────────────────────────────────────────────────────────────
 function ProjectCard({ project, index }) {
   const [hovered, setHovered] = useState(false);
+  const { T } = useContext(ThemeContext);
   return (
     <div
       onMouseEnter={() => setHovered(true)}
@@ -632,8 +692,8 @@ function ProjectCard({ project, index }) {
       onTouchEnd={() => setTimeout(() => setHovered(false), 600)}
       className="relative border rounded-lg p-6 transition-all duration-300 overflow-hidden"
       style={{
-        background: hovered ? "rgba(0,255,200,0.04)" : "rgba(255,255,255,0.02)",
-        borderColor: hovered ? "rgba(0,255,200,0.4)" : "rgba(255,255,255,0.08)",
+        background: hovered ? (T.isDark ? "rgba(0,255,200,0.04)" : "rgba(0,255,200,0.06)") : T.cardBg,
+        borderColor: hovered ? "rgba(0,255,200,0.4)" : T.cardBorder,
         transform: hovered ? "translateY(-6px)" : "translateY(0)",
         boxShadow: hovered ? "0 0 40px rgba(0,255,200,0.1)" : "none",
       }}
@@ -642,14 +702,14 @@ function ProjectCard({ project, index }) {
       <div className="flex items-start justify-between mb-4">
         <span className="text-xs" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(0,255,200,0.6)" }}>{String(index + 1).padStart(2, "0")}</span>
         <div className="flex gap-3">
-          <a href={project.repo} target="_blank" rel="noreferrer" className="text-xs transition-colors" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.4)" }}
-            onMouseOver={(e) => e.target.style.color = CYAN} onMouseOut={(e) => e.target.style.color = "rgba(255,255,255,0.4)"}>repo ↗</a>
-          <a href={project.url} target="_blank" rel="noreferrer" className="text-xs transition-colors" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.4)" }}
-            onMouseOver={(e) => e.target.style.color = CYAN} onMouseOut={(e) => e.target.style.color = "rgba(255,255,255,0.4)"}>live ↗</a>
+          <a href={project.repo} target="_blank" rel="noreferrer" className="text-xs transition-colors" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim }}
+            onMouseOver={(e) => e.target.style.color = CYAN} onMouseOut={(e) => e.target.style.color = T.textDim}>repo ↗</a>
+          <a href={project.url} target="_blank" rel="noreferrer" className="text-xs transition-colors" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim }}
+            onMouseOver={(e) => e.target.style.color = CYAN} onMouseOut={(e) => e.target.style.color = T.textDim}>live ↗</a>
         </div>
       </div>
-      <h3 className="text-lg font-bold text-white mb-2">{project.title}</h3>
-      <p className="text-sm leading-relaxed mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>{project.desc}</p>
+      <h3 className="text-lg font-bold mb-2" style={{ color: T.h2 }}>{project.title}</h3>
+      <p className="text-sm leading-relaxed mb-5" style={{ color: T.textMuted }}>{project.desc}</p>
       <div className="flex flex-wrap gap-2">{project.tags.map((t) => <SkillBadge key={t} label={t} />)}</div>
     </div>
   );
@@ -657,19 +717,76 @@ function ProjectCard({ project, index }) {
 
 // ── Timeline item ─────────────────────────────────────────────────────────────
 function TimelineItem({ item, last }) {
+  const { T } = useContext(ThemeContext);
   return (
     <div className="flex gap-6">
       <div className="flex flex-col items-center">
         <div className="w-3 h-3 rounded-full border-2 mt-1 shrink-0" style={{ borderColor: CYAN, background: "rgba(0,255,200,0.3)" }} />
-        {!last && <div className="flex-1 w-px mt-2" style={{ background: "rgba(255,255,255,0.08)" }} />}
+        {!last && <div className="flex-1 w-px mt-2" style={{ background: T.cardBorder }} />}
       </div>
       <div className="pb-10">
         <div className="flex flex-wrap items-center gap-3 mb-1">
-          <h3 className="text-white font-bold text-lg">{item.role}</h3>
+          <h3 className="font-bold text-lg" style={{ color: T.h2 }}>{item.role}</h3>
           <span className="text-sm" style={{ fontFamily: "'Space Mono',monospace", color: CYAN }}>@ {item.company}</span>
         </div>
-        <p className="text-xs mb-3" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.4)" }}>{item.period}</p>
-        <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{item.desc}</p>
+        <p className="text-xs mb-3" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim }}>{item.period}</p>
+        <p className="text-sm leading-relaxed" style={{ color: T.textMuted }}>{item.desc}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Education card ────────────────────────────────────────────────────────────
+function EducationCard({ item }) {
+  const { T } = useContext(ThemeContext);
+  return (
+    <div className="flex gap-6">
+      <div className="flex flex-col items-center">
+        <div className="w-3 h-3 rounded-full border-2 mt-1 shrink-0" style={{ borderColor: CYAN, background: "rgba(0,255,200,0.3)" }} />
+      </div>
+      <div className="pb-4 flex-1">
+        <div className="border rounded-xl p-6 transition-all duration-300"
+          style={{ borderColor: "rgba(0,255,200,0.18)", background: T.cardBg, boxShadow: T.isDark ? "0 0 40px rgba(0,255,200,0.04)" : "0 4px 24px rgba(0,0,0,0.06)" }}>
+          {/* Header row */}
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: "rgba(0,255,200,0.08)", border: "1px solid rgba(0,255,200,0.25)", color: CYAN, fontSize: 18 }}>
+                ✦
+              </div>
+              <div>
+                <h3 className="font-bold text-lg leading-tight" style={{ color: T.h2 }}>{item.degree}</h3>
+                <p className="text-sm mt-0.5" style={{ fontFamily: "'Space Mono',monospace", color: CYAN }}>@ {item.institution}</p>
+              </div>
+            </div>
+            <div className="shrink-0 px-3 py-1 rounded-full text-xs border"
+              style={{ fontFamily: "'Space Mono',monospace", color: CYAN, borderColor: "rgba(0,255,200,0.3)", background: "rgba(0,255,200,0.06)", whiteSpace: "nowrap" }}>
+              {item.period}
+            </div>
+          </div>
+
+          {/* Location */}
+          <p className="text-xs mb-4 flex items-center gap-1.5" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim }}>
+            <span style={{ color: CYAN }}>◎</span> {item.location}
+          </p>
+
+          {/* Description */}
+          <p className="text-sm leading-relaxed mb-5" style={{ color: T.textMuted }}>{item.desc}</p>
+
+          {/* Highlights */}
+          <div>
+            <p className="text-xs mb-2 tracking-widest uppercase" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim }}>Key Areas</p>
+            <div className="flex flex-wrap gap-2">
+              {item.highlights.map((h) => <SkillBadge key={h} label={h} />)}
+            </div>
+          </div>
+
+          {/* Graduation banner */}
+          <div className="mt-5 pt-4 flex items-center gap-2" style={{ borderTop: `1px solid ${T.cardBorder}` }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: CYAN, boxShadow: `0 0 6px ${CYAN}` }} />
+            <span className="text-xs" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim }}>Graduated 2025</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -681,7 +798,7 @@ function DotNav({ active, onDotClick }) {
     <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex flex-col gap-4 items-center">
       {NAV_ITEMS.map((n) => (
         <button key={n} onClick={() => onDotClick(n)} title={n} className="w-2 h-2 rounded-full transition-all duration-300"
-          style={{ background: active === n ? CYAN : "rgba(255,255,255,0.25)", transform: active === n ? "scale(1.6)" : "scale(1)", boxShadow: active === n ? `0 0 8px rgba(0,255,200,0.7)` : "none" }} />
+          style={{ background: active === n ? CYAN : "rgba(128,128,128,0.35)", transform: active === n ? "scale(1.6)" : "scale(1)", boxShadow: active === n ? `0 0 8px rgba(0,255,200,0.7)` : "none" }} />
       ))}
     </div>
   );
@@ -705,6 +822,7 @@ function TechOrbs() {
 // ── Copy email button ─────────────────────────────────────────────────────────
 function CopyEmailBtn({ email, showToast }) {
   const [copied, setCopied] = useState(false);
+  const { T } = useContext(ThemeContext);
 
   const handleCopy = async () => {
     try {
@@ -723,9 +841,9 @@ function CopyEmailBtn({ email, showToast }) {
       style={{
         fontFamily: "'Space Mono',monospace",
         fontSize: 12,
-        color: copied ? "#000" : "rgba(255,255,255,0.45)",
+        color: copied ? "#000" : T.textMuted,
         background: copied ? CYAN : "transparent",
-        border: `1px solid ${copied ? CYAN : "rgba(255,255,255,0.15)"}`,
+        border: `1px solid ${copied ? CYAN : T.cardBorder}`,
         borderRadius: 6,
         padding: "8px 16px",
         display: "flex",
@@ -736,10 +854,50 @@ function CopyEmailBtn({ email, showToast }) {
         whiteSpace: "nowrap",
       }}
       onMouseOver={(e) => { if (!copied) { e.currentTarget.style.borderColor = `rgba(0,255,200,0.4)`; e.currentTarget.style.color = CYAN; } }}
-      onMouseOut={(e) => { if (!copied) { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.color = "rgba(255,255,255,0.45)"; } }}
+      onMouseOut={(e) => { if (!copied) { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.color = T.textMuted; } }}
     >
       <span>{copied ? "✓" : "⎘"}</span>
       <span>{copied ? "Copied!" : email}</span>
+    </button>
+  );
+}
+
+// ── Theme toggle button ────────────────────────────────────────────────────────
+function ThemeToggle({ isDark, onToggle }) {
+  return (
+    <button
+      onClick={onToggle}
+      title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: "50%",
+        border: `1px solid ${isDark ? "rgba(0,255,200,0.3)" : "rgba(0,0,0,0.15)"}`,
+        background: isDark ? "rgba(0,255,200,0.06)" : "rgba(255,255,255,0.7)",
+        color: isDark ? CYAN : "#666",
+        fontSize: 15,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: IS_TOUCH ? "auto" : "none",
+        transition: "all 0.25s ease",
+        backdropFilter: "blur(10px)",
+        flexShrink: 0,
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.background = isDark ? "rgba(0,255,200,0.12)" : "rgba(255,255,255,1)";
+        e.currentTarget.style.borderColor = CYAN;
+        e.currentTarget.style.color = CYAN;
+        e.currentTarget.style.boxShadow = `0 0 12px rgba(0,255,200,0.2)`;
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.background = isDark ? "rgba(0,255,200,0.06)" : "rgba(255,255,255,0.7)";
+        e.currentTarget.style.borderColor = isDark ? "rgba(0,255,200,0.3)" : "rgba(0,0,0,0.15)";
+        e.currentTarget.style.color = isDark ? CYAN : "#666";
+        e.currentTarget.style.boxShadow = "none";
+      }}
+    >
+      {isDark ? "☀" : "◑"}
     </button>
   );
 }
@@ -750,17 +908,24 @@ export default function Portfolio() {
   const [scrolled, setScrolled] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: "" });
+  const [isDark, setIsDark] = useState(true);
   const containerRef = useRef(null);
   const toastTimer = useRef(null);
+
+  const T = isDark ? THEME_DARK : THEME_LIGHT;
+  // Attach isDark to T so sub-components can check it
+  T.isDark = isDark;
 
   const homeRef = useRef(null);
   const aboutRef = useRef(null);
   const projectsRef = useRef(null);
   const experienceRef = useRef(null);
+  const educationRef = useRef(null);
   const contactRef = useRef(null);
 
   const sectionRefs = useMemo(() => ({
-    Home: homeRef, About: aboutRef, Projects: projectsRef, Experience: experienceRef, Contact: contactRef,
+    Home: homeRef, About: aboutRef, Projects: projectsRef,
+    Experience: experienceRef, Education: educationRef, Contact: contactRef,
   }), []);
 
   const showToast = useCallback((message) => {
@@ -789,280 +954,303 @@ export default function Portfolio() {
   const visibleProjects = showAll ? DATA.projects : DATA.projects.slice(0, 3);
 
   return (
-    <div style={{ background: "#050a0e", fontFamily: "'Space Grotesk',sans-serif", cursor: IS_TOUCH ? "auto" : "none" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Space+Mono&display=swap');
+    <ThemeContext.Provider value={{ isDark, T }}>
+      <div style={{ background: T.bg, fontFamily: "'Space Grotesk',sans-serif", cursor: IS_TOUCH ? "auto" : "none", transition: "background 0.4s ease" }}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Space+Mono&display=swap');
 
-        ${!IS_TOUCH ? "*, *::before, *::after { cursor: none !important; }" : ""}
+          ${!IS_TOUCH ? "*, *::before, *::after { cursor: none !important; }" : ""}
 
-        :root { --tilt-x: 0; --tilt-y: 0; }
+          :root { --tilt-x: 0; --tilt-y: 0; }
 
-        @keyframes gridScroll { 0%{transform:translateY(0);} 100%{transform:translateY(60px);} }
-        @keyframes glitch1 { 0%,90%,100%{opacity:0;transform:translateX(0);} 92%{opacity:0.6;transform:translateX(-4px);} 94%{opacity:0;} 96%{opacity:0.4;transform:translateX(4px);} 98%{opacity:0;} }
-        @keyframes glitch2 { 0%,90%,100%{opacity:0;transform:translateX(0);} 91%{opacity:0.5;transform:translateX(3px);} 93%{opacity:0;} 95%{opacity:0.3;transform:translateX(-3px);} 97%{opacity:0;} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(28px);} to{opacity:1;transform:translateY(0);} }
-        @keyframes pulse-line { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
-        @keyframes float0 { 0%,100%{transform:translateY(0px) rotate(0deg);} 50%{transform:translateY(-18px) rotate(5deg);} }
-        @keyframes float1 { 0%,100%{transform:translateY(0px) rotate(0deg);} 50%{transform:translateY(-12px) rotate(-4deg);} }
-        @keyframes float2 { 0%,100%{transform:translateY(0px) rotate(0deg);} 50%{transform:translateY(-22px) rotate(8deg);} }
-        @keyframes scanPulse { 0%{opacity:0.02;} 50%{opacity:0.05;} 100%{opacity:0.02;} }
+          @keyframes gridScroll { 0%{transform:translateY(0);} 100%{transform:translateY(60px);} }
+          @keyframes glitch1 { 0%,90%,100%{opacity:0;transform:translateX(0);} 92%{opacity:0.6;transform:translateX(-4px);} 94%{opacity:0;} 96%{opacity:0.4;transform:translateX(4px);} 98%{opacity:0;} }
+          @keyframes glitch2 { 0%,90%,100%{opacity:0;transform:translateX(0);} 91%{opacity:0.5;transform:translateX(3px);} 93%{opacity:0;} 95%{opacity:0.3;transform:translateX(-3px);} 97%{opacity:0;} }
+          @keyframes fadeUp { from{opacity:0;transform:translateY(28px);} to{opacity:1;transform:translateY(0);} }
+          @keyframes pulse-line { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+          @keyframes float0 { 0%,100%{transform:translateY(0px) rotate(0deg);} 50%{transform:translateY(-18px) rotate(5deg);} }
+          @keyframes float1 { 0%,100%{transform:translateY(0px) rotate(0deg);} 50%{transform:translateY(-12px) rotate(-4deg);} }
+          @keyframes float2 { 0%,100%{transform:translateY(0px) rotate(0deg);} 50%{transform:translateY(-22px) rotate(8deg);} }
+          @keyframes scanPulse { 0%{opacity:0.02;} 50%{opacity:0.05;} 100%{opacity:0.02;} }
+          @keyframes touchRipple { 0%{width:0;height:0;opacity:1;} 100%{width:150px;height:150px;opacity:0;} }
+          @keyframes touchDotBurst { 0%{transform:translate(-50%,-50%) scale(1);opacity:1;} 60%{transform:translate(-50%,-50%) scale(2.5);opacity:0.6;} 100%{transform:translate(-50%,-50%) scale(4);opacity:0;} }
+          @keyframes touchSpark0 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(0px,-28px);} }
+          @keyframes touchSpark1 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(24px,-16px);} }
+          @keyframes touchSpark2 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(24px,16px);} }
+          @keyframes touchSpark3 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(0px,28px);} }
+          @keyframes touchSpark4 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(-24px,16px);} }
+          @keyframes touchSpark5 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(-24px,-16px);} }
+          @keyframes slideUp { from{transform:translateY(100%);opacity:0;} to{transform:translateY(0);opacity:1;} }
+          @keyframes fadeInOut { 0%{opacity:0;transform:translateX(-50%) translateY(0);} 15%{opacity:1;} 75%{opacity:1;} 100%{opacity:0;transform:translateX(-50%) translateY(-12px);} }
+          @keyframes swipeUpAnim { 0%,100%{transform:translateY(0);opacity:0.5;} 50%{transform:translateY(-10px);opacity:1;} }
+          @keyframes statPop { 0%{transform:scale(0.85);opacity:0;} 100%{transform:scale(1);opacity:1;} }
 
-        @keyframes touchRipple { 0%{width:0;height:0;opacity:1;} 100%{width:150px;height:150px;opacity:0;} }
-        @keyframes touchDotBurst { 0%{transform:translate(-50%,-50%) scale(1);opacity:1;} 60%{transform:translate(-50%,-50%) scale(2.5);opacity:0.6;} 100%{transform:translate(-50%,-50%) scale(4);opacity:0;} }
-        @keyframes touchSpark0 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(0px,-28px);} }
-        @keyframes touchSpark1 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(24px,-16px);} }
-        @keyframes touchSpark2 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(24px,16px);} }
-        @keyframes touchSpark3 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(0px,28px);} }
-        @keyframes touchSpark4 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(-24px,16px);} }
-        @keyframes touchSpark5 { 0%{opacity:1;transform:translate(-50%,-50%) translate(0,0);} 100%{opacity:0;transform:translate(-50%,-50%) translate(-24px,-16px);} }
+          .fu1{animation:fadeUp 0.7s 0.00s ease both;}
+          .fu2{animation:fadeUp 0.7s 0.15s ease both;}
+          .fu3{animation:fadeUp 0.7s 0.30s ease both;}
+          .fu4{animation:fadeUp 0.7s 0.45s ease both;}
+          .fu5{animation:fadeUp 0.7s 0.60s ease both;}
 
-        @keyframes slideUp { from{transform:translateY(100%);opacity:0;} to{transform:translateY(0);opacity:1;} }
-        @keyframes fadeInOut { 0%{opacity:0;transform:translateX(-50%) translateY(0);} 15%{opacity:1;} 75%{opacity:1;} 100%{opacity:0;transform:translateX(-50%) translateY(-12px);} }
-        @keyframes swipeUpAnim { 0%,100%{transform:translateY(0);opacity:0.5;} 50%{transform:translateY(-10px);opacity:1;} }
-        @keyframes statPop { 0%{transform:scale(0.85);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+          .snap-wrap{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;}
+          .snap-wrap::-webkit-scrollbar{width:3px;}
+          .snap-wrap::-webkit-scrollbar-track{background:${T.scrollbarTrack};}
+          .snap-wrap::-webkit-scrollbar-thumb{background:rgba(0,255,200,0.25);border-radius:2px;}
+          .snap-sec{scroll-snap-align:start;scroll-snap-stop:always;min-height:100vh;position:relative;display:flex;align-items:center;}
+          .glow-text{text-shadow:0 0 30px rgba(0,255,200,0.4);}
 
-        .fu1{animation:fadeUp 0.7s 0.00s ease both;}
-        .fu2{animation:fadeUp 0.7s 0.15s ease both;}
-        .fu3{animation:fadeUp 0.7s 0.30s ease both;}
-        .fu4{animation:fadeUp 0.7s 0.45s ease both;}
-        .fu5{animation:fadeUp 0.7s 0.60s ease both;}
+          .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+          }
+          @media (min-width: 480px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+          }
 
-        .snap-wrap{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;}
-        .snap-wrap::-webkit-scrollbar{width:3px;}
-        .snap-wrap::-webkit-scrollbar-track{background:#050a0e;}
-        .snap-wrap::-webkit-scrollbar-thumb{background:rgba(0,255,200,0.25);border-radius:2px;}
-        .snap-sec{scroll-snap-align:start;scroll-snap-stop:always;min-height:100vh;position:relative;display:flex;align-items:center;}
-        .glow-text{text-shadow:0 0 30px rgba(0,255,200,0.4);}
+          @media (max-width: 767px) {
+            .snap-sec { padding-bottom: 68px; }
+            .snap-wrap { -webkit-overflow-scrolling: touch; }
+          }
+        `}</style>
 
-        /* Stats grid: 2×2 on mobile, 4-col on sm+ */
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
-        }
-        @media (min-width: 480px) {
-          .stats-grid { grid-template-columns: repeat(4, 1fr); }
-        }
+        {/* Background layers */}
+        <GridBg />
+        <MouseCanvas />
+        <Cursor />
+        <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: isDark ? "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px)" : "none", animation: "scanPulse 8s ease infinite" }} />
 
-        @media (max-width: 767px) {
-          .snap-sec { padding-bottom: 68px; }
-          .snap-wrap { -webkit-overflow-scrolling: touch; }
-        }
-      `}</style>
+        {/* Mobile layers */}
+        <TiltParallax />
+        <TouchRippleOverlay />
+        <MobileTouchDot />
+        <SwipeHint />
 
-      {/* Background layers */}
-      <GridBg />
-      <MouseCanvas />
-      <Cursor />
-      <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px)", animation: "scanPulse 8s ease infinite" }} />
+        {/* Scroll progress bar */}
+        <ScrollProgressBar containerRef={containerRef} />
 
-      {/* Mobile layers */}
-      <TiltParallax />
-      <TouchRippleOverlay />
-      <MobileTouchDot />
-      <SwipeHint />
+        {/* Toast notification */}
+        <Toast message={toast.message} visible={toast.visible} />
 
-      {/* NEW: Scroll progress bar */}
-      <ScrollProgressBar containerRef={containerRef} />
+        {/* Back to top button */}
+        <BackToTop containerRef={containerRef} scrollTo={scrollTo} />
 
-      {/* NEW: Toast notification */}
-      <Toast message={toast.message} visible={toast.visible} />
+        {/* Navigation */}
+        <DotNav active={activeNav} onDotClick={scrollTo} />
+        <MobileBottomNav active={activeNav} onNavClick={scrollTo} />
 
-      {/* NEW: Back to top button */}
-      <BackToTop containerRef={containerRef} scrollTo={scrollTo} />
-
-      {/* Navigation */}
-      <DotNav active={activeNav} onDotClick={scrollTo} />
-      <MobileBottomNav active={activeNav} onNavClick={scrollTo} />
-
-      <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-        style={{ background: scrolled ? "rgba(5,10,14,0.92)" : "transparent", backdropFilter: scrolled ? "blur(14px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button onClick={() => scrollTo("Home")} className="font-black text-xl tracking-tight text-white" style={{ fontFamily: "'Space Mono',monospace" }}>
-            <span style={{ color: CYAN }}>&lt;</span>Tallal<span style={{ color: CYAN }}>/&gt;</span>
-          </button>
-          <div className="hidden md:flex items-center gap-1">
-            {NAV_ITEMS.map((n) => (
-              <button key={n} onClick={() => scrollTo(n)} className="px-4 py-2 text-sm rounded transition-all duration-200"
-                style={{ fontFamily: "'Space Mono',monospace", color: activeNav === n ? CYAN : "rgba(255,255,255,0.5)", background: activeNav === n ? "rgba(0,255,200,0.08)" : "transparent" }}>
-                {n}
-              </button>
-            ))}
-            <a href={`mailto:${DATA.email}`} className="ml-4 px-5 py-2 text-sm border rounded transition-all duration-200"
-              style={{ fontFamily: "'Space Mono',monospace", borderColor: CYAN, color: CYAN }}
-              onMouseOver={(e) => { e.target.style.background = CYAN; e.target.style.color = "#000"; }}
-              onMouseOut={(e) => { e.target.style.background = "transparent"; e.target.style.color = CYAN; }}>
-              Hire Me
-            </a>
-          </div>
-          <a href={`mailto:${DATA.email}`} className="md:hidden px-4 py-1.5 text-xs border rounded"
-            style={{ fontFamily: "'Space Mono',monospace", borderColor: CYAN, color: CYAN }}>
-            Hire Me
-          </a>
-        </div>
-      </nav>
-
-      {/* Snap container */}
-      <div ref={containerRef} className="snap-wrap">
-
-        {/* HERO */}
-        <section ref={homeRef} className="snap-sec px-6">
-          <TechOrbs />
-          <div className="max-w-6xl mx-auto w-full pt-16 relative z-10">
-            <p className="fu1 text-xs tracking-[0.4em] mb-6" style={{ opacity: 0, fontFamily: "'Space Mono',monospace", color: CYAN }}>
-              ◈ AVAILABLE FOR WORK
-            </p>
-            <h1 className="fu2 text-5xl md:text-7xl lg:text-8xl font-black leading-none mb-6 text-white glow-text" style={{ opacity: 0 }}>
-              <GlitchText text={DATA.name} />
-            </h1>
-            <div className="fu3 text-xl md:text-3xl font-light mb-8" style={{ opacity: 0, color: "rgba(255,255,255,0.6)", fontFamily: "'Space Mono',monospace" }}>
-              <TypeWriter strings={["Full-Stack Developer", "UI/UX Enthusiast", "Open Source Contributor", "Problem Solver"]} />
-            </div>
-            <p className="fu4 max-w-xl text-lg leading-relaxed mb-10" style={{ opacity: 0, color: "rgba(255,255,255,0.5)" }}>{DATA.tagline}</p>
-
-            {/* FIXED: Stats grid — 2×2 on mobile, 4-col on desktop */}
-            <div className="fu4 stats-grid max-w-lg mb-10" style={{ opacity: 0 }}>
-              {DATA.stats.map((s) => <StatCard key={s.label} {...s} />)}
-            </div>
-
-            <div className="fu5 flex flex-wrap gap-4" style={{ opacity: 0 }}>
-              <button onClick={() => scrollTo("Projects")} className="px-8 py-3 text-sm font-bold text-black rounded transition-all duration-200 hover:scale-105 active:scale-95"
-                style={{ fontFamily: "'Space Mono',monospace", background: CYAN }}>
-                View Projects →
-              </button>
-              <button onClick={() => scrollTo("Contact")} className="px-8 py-3 text-sm rounded transition-all duration-200 active:scale-95"
-                style={{ fontFamily: "'Space Mono',monospace", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)" }}
-                onMouseOver={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.5)"; e.target.style.color = "#fff"; }}
-                onMouseOut={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.2)"; e.target.style.color = "rgba(255,255,255,0.7)"; }}>
-                Get In Touch
-              </button>
-            </div>
-            <div className="fu5 flex gap-5 mt-8" style={{ opacity: 0 }}>
-              {[{ label: "GitHub", url: DATA.github }, { label: "LinkedIn", url: DATA.linkedin }].map((s) => (
-                <a key={s.label} href={s.url} target="_blank" rel="noreferrer" className="text-xs transition-colors"
-                  style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.3)" }}
-                  onMouseOver={(e) => e.target.style.color = CYAN} onMouseOut={(e) => e.target.style.color = "rgba(255,255,255,0.3)"}>{s.label} ↗</a>
+        <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+          style={{ background: T.navBg(scrolled), backdropFilter: scrolled ? "blur(14px)" : "none", borderBottom: T.navBorder(scrolled) }}>
+          <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <button onClick={() => scrollTo("Home")} className="font-black text-xl tracking-tight" style={{ fontFamily: "'Space Mono',monospace", color: T.h2 }}>
+              <span style={{ color: CYAN }}>&lt;</span>Tallal<span style={{ color: CYAN }}>/&gt;</span>
+            </button>
+            <div className="hidden md:flex items-center gap-1">
+              {NAV_ITEMS.map((n) => (
+                <button key={n} onClick={() => scrollTo(n)} className="px-4 py-2 text-sm rounded transition-all duration-200"
+                  style={{ fontFamily: "'Space Mono',monospace", color: activeNav === n ? CYAN : T.textMuted, background: activeNav === n ? "rgba(0,255,200,0.08)" : "transparent" }}>
+                  {n}
+                </button>
               ))}
+              <ThemeToggle isDark={isDark} onToggle={() => setIsDark((d) => !d)} />
+              <a href={`mailto:${DATA.email}`} className="ml-4 px-5 py-2 text-sm border rounded transition-all duration-200"
+                style={{ fontFamily: "'Space Mono',monospace", borderColor: CYAN, color: CYAN }}
+                onMouseOver={(e) => { e.target.style.background = CYAN; e.target.style.color = "#000"; }}
+                onMouseOut={(e) => { e.target.style.background = "transparent"; e.target.style.color = CYAN; }}>
+                Hire Me
+              </a>
+            </div>
+            <div className="md:hidden flex items-center gap-2">
+              <ThemeToggle isDark={isDark} onToggle={() => setIsDark((d) => !d)} />
+              <a href={`mailto:${DATA.email}`} className="px-4 py-1.5 text-xs border rounded"
+                style={{ fontFamily: "'Space Mono',monospace", borderColor: CYAN, color: CYAN }}>
+                Hire Me
+              </a>
             </div>
           </div>
-          <div className="absolute bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10">
-            <span className="text-xs" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.2)" }}>scroll</span>
-            <div className="w-px h-10" style={{ background: `linear-gradient(to bottom,rgba(0,255,200,0.5),transparent)`, animation: "pulse-line 2s ease infinite" }} />
-          </div>
-        </section>
+        </nav>
 
-        {/* ABOUT */}
-        <section ref={aboutRef} className="snap-sec px-6">
-          <div className="max-w-6xl mx-auto w-full py-16">
-            <SectionHeader label="01 / About" title="Who I Am" />
-            <div className="grid md:grid-cols-2 gap-16">
-              <div>
-                <p className="leading-relaxed text-lg mb-6" style={{ color: "rgba(255,255,255,0.6)" }}>{DATA.about}</p>
-                <a href="https://drive.google.com/file/d/1dv-yU2A7xhgnFWp5iGo-BTHwZeozgSB2/view?usp=sharings"
-                  target="_blank" rel="noreferrer" className="text-sm pb-1 transition-colors"
-                  style={{ fontFamily: "'Space Mono',monospace", color: CYAN, borderBottom: "1px solid rgba(0,255,200,0.4)" }}>
-                  Download Résumé ↗
-                </a>
-                <div className="mt-10">
-                  <p className="text-xs mb-5 tracking-widest uppercase" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.3)" }}>Proficiency</p>
-                  {DATA.skillLevels.map((s, i) => <SkillBar key={s.label} label={s.label} pct={s.pct} delay={i * 120} />)}
-                </div>
+        {/* Snap container */}
+        <div ref={containerRef} className="snap-wrap">
+
+          {/* HERO */}
+          <section ref={homeRef} className="snap-sec px-6">
+            <TechOrbs />
+            <div className="max-w-6xl mx-auto w-full pt-16 relative z-10">
+              <p className="fu1 text-xs tracking-[0.4em] mb-6" style={{ opacity: 0, fontFamily: "'Space Mono',monospace", color: CYAN }}>
+                ◈ AVAILABLE FOR WORK
+              </p>
+              <h1 className="fu2 text-5xl md:text-7xl lg:text-8xl font-black leading-none mb-6 glow-text" style={{ opacity: 0, color: T.h2 }}>
+                <GlitchText text={DATA.name} />
+              </h1>
+              <div className="fu3 text-xl md:text-3xl font-light mb-8" style={{ opacity: 0, color: T.textMuted, fontFamily: "'Space Mono',monospace" }}>
+                <TypeWriter strings={["Full-Stack Developer", "UI/UX Enthusiast", "Open Source Contributor", "Problem Solver"]} />
               </div>
-              <div className="space-y-8">
-                {DATA.skills.map((group) => (
-                  <div key={group.cat}>
-                    <p className="text-xs mb-3 tracking-widest uppercase" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.3)" }}>{group.cat}</p>
-                    <div className="flex flex-wrap gap-2">{group.items.map((s) => <SkillBadge key={s} label={s} />)}</div>
-                  </div>
+              <p className="fu4 max-w-xl text-lg leading-relaxed mb-10" style={{ opacity: 0, color: T.textMuted }}>{DATA.tagline}</p>
+
+              <div className="fu4 stats-grid max-w-lg mb-10" style={{ opacity: 0 }}>
+                {DATA.stats.map((s) => <StatCard key={s.label} {...s} />)}
+              </div>
+
+              <div className="fu5 flex flex-wrap gap-4" style={{ opacity: 0 }}>
+                <button onClick={() => scrollTo("Projects")} className="px-8 py-3 text-sm font-bold text-black rounded transition-all duration-200 hover:scale-105 active:scale-95"
+                  style={{ fontFamily: "'Space Mono',monospace", background: CYAN }}>
+                  View Projects →
+                </button>
+                <button onClick={() => scrollTo("Contact")} className="px-8 py-3 text-sm rounded transition-all duration-200 active:scale-95"
+                  style={{ fontFamily: "'Space Mono',monospace", border: `1px solid ${T.cardBorder}`, color: T.textMuted }}
+                  onMouseOver={(e) => { e.target.style.borderColor = T.textDim; e.target.style.color = T.h2; }}
+                  onMouseOut={(e) => { e.target.style.borderColor = T.cardBorder; e.target.style.color = T.textMuted; }}>
+                  Get In Touch
+                </button>
+              </div>
+              <div className="fu5 flex gap-5 mt-8" style={{ opacity: 0 }}>
+                {[{ label: "GitHub", url: DATA.github }, { label: "LinkedIn", url: DATA.linkedin }].map((s) => (
+                  <a key={s.label} href={s.url} target="_blank" rel="noreferrer" className="text-xs transition-colors"
+                    style={{ fontFamily: "'Space Mono',monospace", color: T.textDim2 }}
+                    onMouseOver={(e) => e.target.style.color = CYAN} onMouseOut={(e) => e.target.style.color = T.textDim2}>{s.label} ↗</a>
                 ))}
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* PROJECTS */}
-        <section ref={projectsRef} className="snap-sec px-6">
-          <div className="max-w-6xl mx-auto w-full py-16">
-            <SectionHeader label="02 / Projects" title="Things I've Built" />
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {visibleProjects.map((p, i) => <ProjectCard key={p.id} project={p} index={i} />)}
+            <div className="absolute bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10">
+              <span className="text-xs" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim2 }}>scroll</span>
+              <div className="w-px h-10" style={{ background: `linear-gradient(to bottom,rgba(0,255,200,0.5),transparent)`, animation: "pulse-line 2s ease infinite" }} />
             </div>
-            {!showAll && DATA.projects.length > 3 && (
-              <div className="mt-10 text-center">
-                <button onClick={() => setShowAll(true)} className="text-sm px-8 py-3 rounded transition-all duration-200 active:scale-95"
-                  style={{ fontFamily: "'Space Mono',monospace", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.5)" }}
-                  onMouseOver={(e) => { e.target.style.borderColor = "rgba(0,255,200,0.5)"; e.target.style.color = CYAN; }}
-                  onMouseOut={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.2)"; e.target.style.color = "rgba(255,255,255,0.5)"; }}>
-                  Show All Projects ({DATA.projects.length})
-                </button>
-              </div>
-            )}
-          </div>
-        </section>
+          </section>
 
-        {/* EXPERIENCE */}
-        <section ref={experienceRef} className="snap-sec px-6">
-          <div className="max-w-3xl mx-auto w-full py-16">
-            <SectionHeader label="03 / Experience" title="Where I've Worked" />
-            {DATA.experience.map((item, i) => (
-              <TimelineItem key={i} item={item} last={i === DATA.experience.length - 1} />
-            ))}
-            <div className="mt-8 border rounded-lg p-5" style={{ borderColor: "rgba(0,255,200,0.12)", background: "rgba(0,0,0,0.3)" }}>
-              <div className="flex gap-2 mb-4">
-                {["#ff5f57", "#ffbd2e", "#28c840"].map((c) => <div key={c} className="w-3 h-3 rounded-full" style={{ background: c }} />)}
-              </div>
-              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "12px", color: "rgba(255,255,255,0.5)", lineHeight: "1.8" }}>
-                <span style={{ color: "#a855f7" }}>const</span> <span style={{ color: CYAN }}>developer</span> = {"{"}<br />
-                &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>passion</span>: <span style={{ color: "#86efac" }}>"building things that matter"</span>,<br />
-                &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>status</span>: <span style={{ color: "#86efac" }}>"open to opportunities"</span>,<br />
-                &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>coffee</span>: <span style={{ color: "#f87171" }}>Infinity</span><br />
-                {"}"}
+          {/* ABOUT */}
+          <section ref={aboutRef} className="snap-sec px-6">
+            <div className="max-w-6xl mx-auto w-full py-16">
+              <SectionHeader label="01 / About" title="Who I Am" />
+              <div className="grid md:grid-cols-2 gap-16">
+                <div>
+                  <p className="leading-relaxed text-lg mb-6" style={{ color: T.textMuted }}>{DATA.about}</p>
+                  <a href="https://drive.google.com/file/d/1dv-yU2A7xhgnFWp5iGo-BTHwZeozgSB2/view?usp=sharings"
+                    target="_blank" rel="noreferrer" className="text-sm pb-1 transition-colors"
+                    style={{ fontFamily: "'Space Mono',monospace", color: CYAN, borderBottom: "1px solid rgba(0,255,200,0.4)" }}>
+                    Download Résumé ↗
+                  </a>
+                  <div className="mt-10">
+                    <p className="text-xs mb-5 tracking-widest uppercase" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim }}>Proficiency</p>
+                    {DATA.skillLevels.map((s, i) => <SkillBar key={s.label} label={s.label} pct={s.pct} delay={i * 120} />)}
+                  </div>
+                </div>
+                <div className="space-y-8">
+                  {DATA.skills.map((group) => (
+                    <div key={group.cat}>
+                      <p className="text-xs mb-3 tracking-widest uppercase" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim }}>{group.cat}</p>
+                      <div className="flex flex-wrap gap-2">{group.items.map((s) => <SkillBadge key={s} label={s} />)}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* CONTACT */}
-        <section ref={contactRef} className="snap-sec px-6">
-          <div className="max-w-3xl mx-auto w-full py-16 text-center">
-            <SectionHeader label="04 / Contact" title="Let's Work Together" />
-            <p className="text-lg leading-relaxed mb-8 max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.5)" }}>
-              I'm currently open to new opportunities. Whether you have a project in mind or just want to say hello, my inbox is always open.
-            </p>
-
-            {/* NEW: Copy email widget */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-              <a href={`mailto:${DATA.email}`} className="inline-block px-10 py-3.5 font-bold text-black rounded transition-all duration-200 hover:scale-105 active:scale-95"
-                style={{ fontFamily: "'Space Mono',monospace", background: CYAN, boxShadow: "0 0 40px rgba(0,255,200,0.3)", fontSize: 13 }}>
-                Say Hello →
-              </a>
-              <CopyEmailBtn email={DATA.email} showToast={showToast} />
+          {/* PROJECTS */}
+          <section ref={projectsRef} className="snap-sec px-6">
+            <div className="max-w-6xl mx-auto w-full py-16">
+              <SectionHeader label="02 / Projects" title="Things I've Built" />
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {visibleProjects.map((p, i) => <ProjectCard key={p.id} project={p} index={i} />)}
+              </div>
+              {!showAll && DATA.projects.length > 3 && (
+                <div className="mt-10 text-center">
+                  <button onClick={() => setShowAll(true)} className="text-sm px-8 py-3 rounded transition-all duration-200 active:scale-95"
+                    style={{ fontFamily: "'Space Mono',monospace", border: `1px solid ${T.cardBorder}`, color: T.textMuted }}
+                    onMouseOver={(e) => { e.target.style.borderColor = "rgba(0,255,200,0.5)"; e.target.style.color = CYAN; }}
+                    onMouseOut={(e) => { e.target.style.borderColor = T.cardBorder; e.target.style.color = T.textMuted; }}>
+                    Show All Projects ({DATA.projects.length})
+                  </button>
+                </div>
+              )}
             </div>
+          </section>
 
-            <div className="grid grid-cols-3 gap-4 mt-10 max-w-md mx-auto">
-              {[
-                { label: "GitHub", url: DATA.github, icon: "⌥" },
-                { label: "LinkedIn", url: DATA.linkedin, icon: "◈" },
-                { label: "Email", url: `mailto:${DATA.email}`, icon: "✉" },
-              ].map((s) => (
-                <a key={s.label} href={s.url} target="_blank" rel="noreferrer"
-                  className="border rounded-lg py-4 px-2 flex flex-col items-center gap-2 transition-all duration-200 active:scale-95"
-                  style={{ borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", textDecoration: "none" }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = "rgba(0,255,200,0.4)"; e.currentTarget.style.color = CYAN; e.currentTarget.style.background = "rgba(0,255,200,0.04)"; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "rgba(255,255,255,0.4)"; e.currentTarget.style.background = "transparent"; }}>
-                  <span style={{ fontSize: "18px" }}>{s.icon}</span>
-                  <span style={{ fontFamily: "'Space Mono',monospace", fontSize: "11px" }}>{s.label}</span>
-                </a>
+          {/* EXPERIENCE */}
+          <section ref={experienceRef} className="snap-sec px-6">
+            <div className="max-w-3xl mx-auto w-full py-16">
+              <SectionHeader label="03 / Experience" title="Where I've Worked" />
+              {DATA.experience.map((item, i) => (
+                <TimelineItem key={i} item={item} last={i === DATA.experience.length - 1} />
               ))}
+              <div className="mt-8 border rounded-lg p-5" style={{ borderColor: "rgba(0,255,200,0.12)", background: T.terminalBg }}>
+                <div className="flex gap-2 mb-4">
+                  {["#ff5f57", "#ffbd2e", "#28c840"].map((c) => <div key={c} className="w-3 h-3 rounded-full" style={{ background: c }} />)}
+                </div>
+                <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "12px", color: T.textMuted, lineHeight: "1.8" }}>
+                  <span style={{ color: "#a855f7" }}>const</span> <span style={{ color: CYAN }}>developer</span> = {"{"}<br />
+                  &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>passion</span>: <span style={{ color: "#86efac" }}>"building things that matter"</span>,<br />
+                  &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>status</span>: <span style={{ color: "#86efac" }}>"open to opportunities"</span>,<br />
+                  &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>coffee</span>: <span style={{ color: "#f87171" }}>Infinity</span><br />
+                  {"}"}
+                </div>
+              </div>
             </div>
+          </section>
 
-            <p className="text-xs mt-14" style={{ fontFamily: "'Space Mono',monospace", color: "rgba(255,255,255,0.12)" }}>
-              © {new Date().getFullYear()} {DATA.name}. Built with React + Tailwind CSS.
-            </p>
-          </div>
-        </section>
+          {/* EDUCATION */}
+          <section ref={educationRef} className="snap-sec px-6">
+            <div className="max-w-3xl mx-auto w-full py-16">
+              <SectionHeader label="04 / Education" title="Where I Studied" />
+              {DATA.education.map((item, i) => (
+                <EducationCard key={i} item={item} />
+              ))}
+              <div className="mt-8 border rounded-lg p-5" style={{ borderColor: "rgba(0,255,200,0.12)", background: T.terminalBg }}>
+                <div className="flex gap-2 mb-4">
+                  {["#ff5f57", "#ffbd2e", "#28c840"].map((c) => <div key={c} className="w-3 h-3 rounded-full" style={{ background: c }} />)}
+                </div>
+                <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "12px", color: T.textMuted, lineHeight: "1.8" }}>
+                  <span style={{ color: "#a855f7" }}>const</span> <span style={{ color: CYAN }}>education</span> = {"{"}<br />
+                  &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>degree</span>: <span style={{ color: "#86efac" }}>"BS Software Engineering"</span>,<br />
+                  &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>university</span>: <span style={{ color: "#86efac" }}>"Air University, Islamabad"</span>,<br />
+                  &nbsp;&nbsp;<span style={{ color: "#fbbf24" }}>graduated</span>: <span style={{ color: "#f87171" }}>2025</span><br />
+                  {"}"}
+                </div>
+              </div>
+            </div>
+          </section>
 
+          {/* CONTACT */}
+          <section ref={contactRef} className="snap-sec px-6">
+            <div className="max-w-3xl mx-auto w-full py-16 text-center">
+              <SectionHeader label="05 / Contact" title="Let's Work Together" />
+              <p className="text-lg leading-relaxed mb-8 max-w-xl mx-auto" style={{ color: T.textMuted }}>
+                I'm currently open to new opportunities. Whether you have a project in mind or just want to say hello, my inbox is always open.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+                <a href={`mailto:${DATA.email}`} className="inline-block px-10 py-3.5 font-bold text-black rounded transition-all duration-200 hover:scale-105 active:scale-95"
+                  style={{ fontFamily: "'Space Mono',monospace", background: CYAN, boxShadow: "0 0 40px rgba(0,255,200,0.3)", fontSize: 13 }}>
+                  Say Hello →
+                </a>
+                <CopyEmailBtn email={DATA.email} showToast={showToast} />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 mt-10 max-w-md mx-auto">
+                {[
+                  { label: "GitHub", url: DATA.github, icon: "⌥" },
+                  { label: "LinkedIn", url: DATA.linkedin, icon: "◈" },
+                  { label: "Email", url: `mailto:${DATA.email}`, icon: "✉" },
+                ].map((s) => (
+                  <a key={s.label} href={s.url} target="_blank" rel="noreferrer"
+                    className="border rounded-lg py-4 px-2 flex flex-col items-center gap-2 transition-all duration-200 active:scale-95"
+                    style={{ borderColor: T.cardBorder, color: T.textDim, textDecoration: "none" }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = "rgba(0,255,200,0.4)"; e.currentTarget.style.color = CYAN; e.currentTarget.style.background = "rgba(0,255,200,0.04)"; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = T.cardBorder; e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}>
+                    <span style={{ fontSize: "18px" }}>{s.icon}</span>
+                    <span style={{ fontFamily: "'Space Mono',monospace", fontSize: "11px" }}>{s.label}</span>
+                  </a>
+                ))}
+              </div>
+
+              <p className="text-xs mt-14" style={{ fontFamily: "'Space Mono',monospace", color: T.textDim3 }}>
+                © {new Date().getFullYear()} {DATA.name}. Built with React + Tailwind CSS.
+              </p>
+            </div>
+          </section>
+
+        </div>
       </div>
-    </div>
+    </ThemeContext.Provider>
   );
 }
