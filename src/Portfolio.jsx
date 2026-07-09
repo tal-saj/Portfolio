@@ -67,8 +67,8 @@ const DATA = {
   projects: [
     { id: 1, title: "Hostel Hub", desc: "A platform that helps people easily find, compare, and choose the perfect hostel based on their needs.", tags: ["MongoDB", "ExpressJS", "React", "Node.js"], url: "https://hostelhub-frontend-tau.vercel.app/", repo: "https://github.com/tal-saj/hostelhub-frontend" },
     { id: 2, title: "Chat UP", desc: "Real-time messaging platform that lets people connect and build conversations effortlessly.", tags: ["Next.js", "MongoDB", "Vercel"], url: "https://chat-up-frontend-three.vercel.app/", repo: "https://github.com/tal-saj/ChatUp" },
-    { id: 4, title: "Reality 21 Consultants", desc: "Portfolio Website for Reality 21 consultants.", tags: ["Next.js", "MongoDB", "Vercel"], url: "https://reality21-consultants.vercel.app/", repo: "https://github.com/tal-saj/Reality21Consultants" },
     { id: 3, title: "Pathfinder ", desc: "A Webpage to find prefered course from across the globe.", tags: ["Python", "Next.js", "MongoDB", "Vercel"], url: "https://pathfinder-frontend-sable.vercel.app/", repo: "https://github.com/tal-saj/pathfinder-frontend" },
+    { id: 4, title: "Reality 21 Consultants", desc: "Portfolio Website for Reality 21 consultants.", tags: ["Next.js", "MongoDB", "Vercel"], url: "https://reality21-consultants.vercel.app/", repo: "https://github.com/tal-saj/Reality21Consultants" },
     { id: 5, title: "Quick Mealz", desc: "Portfolio site for a client showcasing a platform that makes discovering delicious meals fast and convenient.", tags: ["Next.js", "React", "Tailwind"], url: "https://quickmealz.vercel.app/", repo: "https://github.com/tal-saj/Quickmealz" },
     { id: 6, title: "Kouba UK", desc: "Portfolio website for a client to showcase their brand, services, and offerings in a clear and engaging way.", tags: ["HTML", "CSS", "JS"], url: "#", repo: "https://github.com/tal-saj/kouba.uk" },
   ],
